@@ -17,6 +17,7 @@
             --text-dim: #888888;
             --border: rgba(255, 255, 255, 0.08);
             --warn-red: #ff3e3e;
+            --warn-orange: #ff9f43;
             --safe-green: #00ff88;
         }
 
@@ -46,10 +47,6 @@
         }
         .glow-left { left: -15vw; top: 20vh; }
         .glow-right { right: -15vw; bottom: 10vh; animation-delay: -4s; }
-
-        @media (max-width: 600px) {
-            .ambient-glow { width: 90vw; height: 90vw; opacity: 0.6; filter: blur(60px); }
-        }
 
         @keyframes jiggle {
             0%, 100% { transform: translate(0, 0) scale(1); }
@@ -119,10 +116,9 @@
             height: 320px;
         }
 
-        .footer { margin-top: 50px; text-align: center; color: var(--text-dim); font-size: 0.75rem; }
+        .footer { margin-top: 50px; text-align: center; color: var(--text-dim); font-size: 0.75rem; max-width: 600px; }
+        .disclaimer { margin-bottom: 15px; font-style: italic; line-height: 1.4; border-top: 1px solid var(--border); padding-top: 15px; }
         .credits { font-family: 'JetBrains Mono', monospace; color: var(--text-main); opacity: 0.6; margin-top: 5px; }
-
-        @media (max-width: 600px) { .value { font-size: 2rem; } .header { flex-direction: column; gap: 10px; } }
     </style>
 </head>
 <body>
@@ -131,7 +127,7 @@
     <div class="ambient-glow glow-right" id="ambient-r"></div>
 
     <div class="header">
-        <div class="logo">METEOR-IX</div>
+        <div class="logo">METEOR-IX <span style="font-size: 0.6rem; opacity: 0.5;">v0.0.2.1</span></div>
         <div style="font-size: 0.7rem; color: var(--text-dim); font-family: 'JetBrains Mono';">
             STATION: DIAMOND HARBOUR | IST
         </div>
@@ -161,6 +157,10 @@
     </div>
 
     <div class="footer">
+        <div class="disclaimer">
+            DATA ADVISORY: METEOR-IX uses localized barometric pressure trends for experimental analysis. These automated alerts are not official life-safety warnings. For emergency protocols, please refer to the India Meteorological Department (IMD).
+        </div>
+        Version • 0.0.2.1 <br>
         DIAMOND HARBOUR OBSERVATORY • 2026<br>
         <div class="credits">Created by Ayus Das • Systems Architect</div>
     </div>
@@ -192,7 +192,7 @@
                             font: { size: 10, family: "'JetBrains Mono'" },
                             maxRotation: 0, 
                             autoSkip: true, 
-                            maxTicksLimit: 5 // Forces a clean look on all screens
+                            maxTicksLimit: 5 
                         }, 
                         grid: { display: false } 
                     },
@@ -204,37 +204,51 @@
             }
         });
 
-        function applyStormWarning(isActive) {
+        function applyTieredWarning(dropValue) {
             const box = document.getElementById('sentry-box');
             const emoji = document.getElementById('sentry-emoji');
             const text = document.getElementById('sentry-text');
             const glowL = document.getElementById('ambient-l');
             const glowR = document.getElementById('ambient-r');
 
-            if (isActive) {
+            // Reset animations
+            glowL.classList.remove('warning-active');
+            glowR.classList.remove('warning-active');
+
+            if (dropValue >= 2.5) {
+                // TIER 3: CRITICAL DROP
                 box.style.background = "rgba(255, 62, 62, 0.15)";
                 box.style.borderColor = "var(--warn-red)";
                 emoji.innerText = "⚠️😱";
-                text.innerText = "WARNING: UNSTABLE PRESSURE DETECTED";
+                text.innerText = "CRITICAL: RAPID PRESSURE DROP DETECTED";
                 text.style.color = "var(--warn-red)";
-                
                 glowL.style.background = "var(--warn-red)";
                 glowR.style.background = "var(--warn-red)";
                 glowL.classList.add('warning-active');
                 glowR.classList.add('warning-active');
+                return true;
+            } else if (dropValue >= 1.2) {
+                // TIER 2: UNSETTLED / MODERATE DROP
+                box.style.background = "rgba(255, 159, 67, 0.15)";
+                box.style.borderColor = "var(--warn-orange)";
+                emoji.innerText = "☁️🧐";
+                text.innerText = "UNSETTLED: MODERATE PRESSURE TREND";
+                text.style.color = "var(--warn-orange)";
+                glowL.style.background = "var(--warn-orange)";
+                glowR.style.background = "var(--warn-orange)";
+                return true;
             } else {
+                // TIER 1: SAFE
                 box.style.background = "rgba(255, 255, 255, 0.03)";
                 box.style.borderColor = "var(--border)";
                 emoji.innerText = "😊";
-                text.innerText = "NO WARNING, YOU ARE SAFE.";
+                text.innerText = "STABLE: NO WARNINGS ACTIVE";
                 text.style.color = "var(--safe-green)";
-                
-                glowL.classList.remove('warning-active');
-                glowR.classList.remove('warning-active');
+                return false;
             }
         }
 
-        function updateAmbientColor(temp, isWarning) {
+        function updateAmbientColor(temp, isWarning, dropValue) {
             if (isWarning) return; 
 
             let color = "";
@@ -258,17 +272,15 @@
                         document.getElementById('temp-val').childNodes[0].nodeValue = latest.temp.toFixed(1);
                         document.getElementById('pres-val').childNodes[0].nodeValue = latest.pres.toFixed(1);
 
-                        let stormDetected = false;
+                        let drop = 0;
                         if (data.length >= 120) {
                             const twoHoursAgo = data[0].pres;
-                            const drop = twoHoursAgo - latest.pres;
-                            if (drop >= 1.5) stormDetected = true;
+                            drop = twoHoursAgo - latest.pres;
                         }
 
-                        applyStormWarning(stormDetected);
-                        updateAmbientColor(latest.temp, stormDetected);
+                        const warningActive = applyTieredWarning(drop);
+                        updateAmbientColor(latest.temp, warningActive, drop);
 
-                        // Only show the last 40 points for a cleaner graph view
                         const graphData = data.slice(-40);
                         const labels = graphData.map(d => d.timestamp.split(' ')[1].substring(0, 5));
                         const pressures = graphData.map(d => d.pres);
