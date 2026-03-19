@@ -23,26 +23,27 @@ def index():
 @app.route('/update', methods=['POST'])
 def update():
     try:
-        # This line is safer for microcontrollers
         data = request.get_json(force=True, silent=True)
-        
         if not data:
             return jsonify({"status": "error", "message": "No JSON received"}), 400
             
         temp = data.get('temp')
         pres = data.get('pres')
         
-        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        
         conn = sqlite3.connect('weather.db')
         c = conn.cursor()
+        
+        # ADD THIS LINE: Ensures the table exists before inserting
+        c.execute('''CREATE TABLE IF NOT EXISTS readings 
+                     (id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                      timestamp TEXT, temp REAL, pres REAL)''')
+        
         c.execute("INSERT INTO readings (timestamp, temp, pres) VALUES (?, ?, ?)",
-                  (now, temp, pres))
+                  (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), temp, pres))
         conn.commit()
         conn.close()
         return jsonify({"status": "success"}), 200
     except Exception as e:
-        print(f"Error: {e}")
         return jsonify({"status": "error", "message": str(e)}), 400
 
 @app.route('/get_data')
