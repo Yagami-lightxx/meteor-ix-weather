@@ -131,17 +131,17 @@
         <div class="card">
             <div class="label">Atmospheric Pressure</div>
             <div class="value" id="pres-val">--.-<span class="unit"> hPa</span></div>
-            <div id="trend-text" style="font-size: 0.9rem; color: var(--accent-blue);">Stable</div>
+            <div id="trend-text" style="font-size: 0.9rem; color: var(--accent-blue);">Live Monitoring</div>
         </div>
 
         <div class="card">
             <div class="label">Ambient Temperature</div>
             <div class="value" id="temp-val" style="color: var(--accent-orange);">--.-<span class="unit"> °C</span></div>
-            <div style="font-size: 0.9rem; color: var(--text-dim);">Real-time Satellite Sync</div>
+            <div style="font-size: 0.9rem; color: var(--text-dim);">Live ESP8266 Sync</div>
         </div>
 
         <div class="chart-container">
-            <div class="label">Pressure Variation (Last 24 Hours)</div>
+            <div class="label">Pressure Variation (Real-time Plot)</div>
             <canvas id="weatherChart"></canvas>
         </div>
     </div>
@@ -154,16 +154,17 @@
         const weatherChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: [], // Timestamps
+                labels: [], 
                 datasets: [{
                     label: 'Pressure (hPa)',
                     data: [],
                     borderColor: '#00d2ff',
-                    borderWidth: 2,
-                    pointRadius: 0,
+                    borderWidth: 3,
+                    pointRadius: 2,
+                    pointBackgroundColor: '#00d2ff',
                     fill: true,
                     backgroundColor: 'rgba(0, 210, 255, 0.05)',
-                    tension: 0.4
+                    tension: 0.3
                 }]
             },
             options: {
@@ -171,7 +172,9 @@
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
-                    x: { display: false },
+                    x: { 
+                        ticks: { color: '#555', maxRotation: 0, autoSkip: true, maxTicksLimit: 10 }
+                    },
                     y: { 
                         grid: { color: 'rgba(255,255,255,0.05)' },
                         ticks: { color: '#888', font: { family: 'JetBrains Mono' } }
@@ -185,25 +188,35 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data && data.length > 0) {
-                        const latest = data[0]; 
+                        // The last item in the list is the most recent
+                        const latest = data[data.length - 1]; 
                         
-                        // Matches the IDs in your HTML exactly
                         const tempElement = document.getElementById('temp-val');
                         const presElement = document.getElementById('pres-val');
 
-                        if (tempElement && latest.temp !== undefined) {
+                        if (tempElement) {
                             tempElement.childNodes[0].nodeValue = latest.temp.toFixed(1);
                         }
-                        if (presElement && latest.pres !== undefined) {
+                        if (presElement) {
                             presElement.childNodes[0].nodeValue = latest.pres.toFixed(1);
                         }
+
+                        // GRAPH PLOTTING LOGIC
+                        // Map labels to just show the Time (HH:MM)
+                        const labels = data.map(d => d.timestamp.split(' ')[1]);
+                        const pressures = data.map(d => d.pres);
+
+                        weatherChart.data.labels = labels;
+                        weatherChart.data.datasets[0].data = pressures;
+                        weatherChart.update();
                     }
                 })
                 .catch(error => console.error('Dashboard Sync Failed:', error));
         }
-        // Make sure it runs every 30 seconds
-        setInterval(updateDashboard, 30000);
-        updateDashboard(); // Run once on load
+
+        // Run every 60 seconds (1 minute)
+        setInterval(updateDashboard, 60000);
+        updateDashboard(); 
     </script>
 </body>
 </html>

@@ -5,7 +5,6 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-# This ensures the database is ready as soon as the app starts
 def init_db():
     with sqlite3.connect('weather.db') as conn:
         c = conn.cursor()
@@ -23,7 +22,6 @@ def index():
 @app.route('/update', methods=['POST'])
 def update():
     try:
-        # force=True handles cases where the NodeMCU doesn't send the header perfectly
         data = request.get_json(force=True, silent=True)
         if not data:
             return jsonify({"status": "error", "message": "No JSON received"}), 400
@@ -44,20 +42,19 @@ def update():
 def get_data():
     with sqlite3.connect('weather.db') as conn:
         c = conn.cursor()
-        # Order by ID DESC so the newest data is always at index [0]
-        c.execute("SELECT timestamp, temp, pres FROM readings ORDER BY id DESC LIMIT 1")
-        r = c.fetchone()
+        # Fetch last 50 readings to show progress on the graph
+        c.execute("SELECT timestamp, temp, pres FROM readings ORDER BY id DESC LIMIT 50")
+        rows = c.fetchall()
     
-    if r:
-        # Return as a list containing one dictionary
-        return jsonify([{
-            'timestamp': r[0],
-            'temp': r[1],
-            'pres': r[2]
-        }])
-    return jsonify([])
+    # We reverse the list [::-1] so the oldest data is on the left of the graph
+    data = [{
+        'timestamp': r[0],
+        'temp': r[1],
+        'pres': r[2]
+    } for r in rows][::-1]
+    
+    return jsonify(data)
 
 if __name__ == "__main__":
-    # This part is for local testing only; Render uses Gunicorn instead
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
