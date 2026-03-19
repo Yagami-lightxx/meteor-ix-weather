@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>METEOR-IX | Weather Intelligence</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --bg: #050505;
+            --card-bg: rgba(20, 20, 20, 0.7);
+            --accent-blue: #00d2ff;
+            --accent-orange: #ff9f43;
+            --accent-red: #ff4b2b;
+            --text-main: #ffffff;
+            --text-dim: #888888;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-weight: 600;
+            letter-spacing: 4px;
+            font-size: 1.2rem;
+            color: var(--accent-blue);
+        }
+
+        .status-dot {
+            height: 8px;
+            width: 8px;
+            background-color: #00ff00;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+            box-shadow: 0 0 10px #00ff00;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 24px;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(0, 210, 255, 0.3);
+        }
+
+        .label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+        }
+
+        .value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2.5rem;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .unit {
+            font-size: 1rem;
+            color: var(--text-dim);
+        }
+
+        .chart-container {
+            grid-column: 1 / -1;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 24px;
+            height: 350px;
+        }
+
+        .footer {
+            margin-top: 40px;
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+
+        @media (max-width: 600px) {
+            .value { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="logo">METEOR-IX</div>
+        <div style="font-size: 0.8rem; color: var(--text-dim);">
+            <span class="status-dot"></span>STATION ACTIVE
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <div class="label">Atmospheric Pressure</div>
+            <div class="value" id="pres-val">--.-<span class="unit"> hPa</span></div>
+            <div id="trend-text" style="font-size: 0.9rem; color: var(--accent-blue);">Stable</div>
+        </div>
+
+        <div class="card">
+            <div class="label">Ambient Temperature</div>
+            <div class="value" id="temp-val" style="color: var(--accent-orange);">--.-<span class="unit"> °C</span></div>
+            <div style="font-size: 0.9rem; color: var(--text-dim);">Real-time Satellite Sync</div>
+        </div>
+
+        <div class="chart-container">
+            <div class="label">Pressure Variation (Last 24 Hours)</div>
+            <canvas id="weatherChart"></canvas>
+        </div>
+    </div>
+
+    <div class="footer">DIAMOND HARBOUR OBSERVATORY • 2026</div>
+
+    <script>
+        // Initialize Chart
+        const ctx = document.getElementById('weatherChart').getContext('2d');
+        const weatherChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [], // Timestamps
+                datasets: [{
+                    label: 'Pressure (hPa)',
+                    data: [],
+                    borderColor: '#00d2ff',
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    fill: true,
+                    backgroundColor: 'rgba(0, 210, 255, 0.05)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { display: false },
+                    y: { 
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        ticks: { color: '#888', font: { family: 'JetBrains Mono' } }
+                    }
+                }
+            }
+        });
+
+        // Function to Fetch Data from your Python API
+        async function updateDashboard() {
+            try {
+                const response = await fetch('/get_data');
+                const data = await response.json();
+                
+                if (data.length > 0) {
+                    const latest = data[0]; // Assuming Python returns sorted list [timestamp, temp, pres]
+                    
+                    // Update Text Values
+                    document.getElementById('temp-val').innerHTML = `${latest[2].toFixed(1)}<span class="unit"> °C</span>`;
+                    document.getElementById('pres-val').innerHTML = `${latest[3].toFixed(1)}<span class="unit"> hPa</span>`;
+                    
+                    // Update Chart
+                    const chartData = data.slice(0, 50).reverse();
+                    weatherChart.data.labels = chartData.map(d => d[1]);
+                    weatherChart.data.datasets[0].data = chartData.map(d => d[3]);
+                    weatherChart.update();
+                }
+            } catch (e) {
+                console.error("Dashboard Sync Failed", e);
+            }
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(updateDashboard, 30000);
+        updateDashboard();
+    </script>
+</body>
+</html>
