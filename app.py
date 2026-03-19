@@ -29,7 +29,6 @@ def update():
         temp = data.get('temp')
         pres = data.get('pres')
         
-        # Calculate IST (UTC + 5:30)
         ist_time = datetime.utcnow() + timedelta(hours=5, minutes=30)
         timestamp_str = ist_time.strftime("%Y-%m-%d %H:%M:%S")
         
@@ -46,11 +45,10 @@ def update():
 def get_data():
     with sqlite3.connect('weather.db') as conn:
         c = conn.cursor()
-        # Fetch last 50 readings to show progress on the graph
-        c.execute("SELECT timestamp, temp, pres FROM readings ORDER BY id DESC LIMIT 50")
+        # Increased limit to 120 to ensure we have 2 hours of data for the Sentry algorithm
+        c.execute("SELECT timestamp, temp, pres FROM readings ORDER BY id DESC LIMIT 120")
         rows = c.fetchall()
     
-    # We reverse the list [::-1] so the oldest data is on the left of the graph
     data = [{
         'timestamp': r[0],
         'temp': r[1],

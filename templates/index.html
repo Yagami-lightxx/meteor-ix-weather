@@ -16,7 +16,8 @@
             --text-main: #ffffff;
             --text-dim: #888888;
             --border: rgba(255, 255, 255, 0.08);
-            --ambient-color: rgba(0, 210, 255, 0.2); /* Default */
+            --warn-red: #ff3e3e;
+            --safe-green: #00ff88;
         }
 
         body {
@@ -32,20 +33,23 @@
             min-height: 100vh;
         }
 
-        /* Ambient Glow Effect */
         .ambient-glow {
             position: fixed;
-            width: 40vw;
-            height: 40vw;
+            width: 45vw;
+            height: 45vw;
             border-radius: 50%;
             filter: blur(80px);
             z-index: -1;
-            opacity: 0.5;
-            transition: background 2s ease-in-out;
+            opacity: 0.4;
+            transition: all 1.5s ease-in-out;
             animation: jiggle 8s infinite ease-in-out;
         }
-        .glow-left { left: -15vw; top: 20vh; background: var(--ambient-color); }
-        .glow-right { right: -15vw; bottom: 10vh; background: var(--ambient-color); animation-delay: -4s; }
+        .glow-left { left: -15vw; top: 20vh; }
+        .glow-right { right: -15vw; bottom: 10vh; animation-delay: -4s; }
+
+        @media (max-width: 600px) {
+            .ambient-glow { width: 90vw; height: 90vw; opacity: 0.6; filter: blur(60px); }
+        }
 
         @keyframes jiggle {
             0%, 100% { transform: translate(0, 0) scale(1); }
@@ -53,30 +57,37 @@
             66% { transform: translate(-20px, 40px) scale(0.9); }
         }
 
+        @keyframes warningFade {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.2); }
+        }
+        .warning-active { animation: warningFade 2s infinite ease-in-out !important; }
+
         .header {
             width: 100%;
             max-width: 1000px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             z-index: 10;
         }
 
-        .logo {
-            font-weight: 600;
-            letter-spacing: 4px;
-            font-size: 1.2rem;
-            color: var(--accent-blue);
-        }
+        .logo { font-weight: 600; letter-spacing: 4px; font-size: 1.1rem; color: var(--accent-blue); }
 
-        .status-dot {
-            height: 8px; width: 8px;
-            background-color: #00ff00;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 8px;
-            box-shadow: 0 0 10px #00ff00;
+        .sentry-banner {
+            width: 100%;
+            max-width: 1000px;
+            padding: 15px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+            gap: 12px;
+            transition: all 0.5s ease;
         }
 
         .container {
@@ -96,21 +107,7 @@
             padding: 24px;
         }
 
-        .label {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: var(--text-dim);
-            margin-bottom: 8px;
-        }
-
-        .value {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 2.5rem;
-            font-weight: 500;
-            margin-bottom: 4px;
-        }
-
+        .value { font-family: 'JetBrains Mono', monospace; font-size: 2.5rem; font-weight: 500; }
         .unit { font-size: 1rem; color: var(--text-dim); }
 
         .chart-container {
@@ -119,28 +116,13 @@
             border: 1px solid var(--border);
             border-radius: 24px;
             padding: 24px;
-            height: 350px;
+            height: 320px;
         }
 
-        .footer {
-            margin-top: 50px;
-            text-align: center;
-            color: var(--text-dim);
-            font-size: 0.8rem;
-            letter-spacing: 1px;
-            line-height: 1.6;
-        }
+        .footer { margin-top: 50px; text-align: center; color: var(--text-dim); font-size: 0.75rem; }
+        .credits { font-family: 'JetBrains Mono', monospace; color: var(--text-main); opacity: 0.6; margin-top: 5px; }
 
-        .credits {
-            font-family: 'JetBrains Mono', monospace;
-            color: var(--text-main);
-            opacity: 0.6;
-            margin-top: 8px;
-            font-size: 0.7rem;
-            text-transform: uppercase;
-        }
-
-        @media (max-width: 600px) { .value { font-size: 2rem; } }
+        @media (max-width: 600px) { .value { font-size: 2rem; } .header { flex-direction: column; gap: 10px; } }
     </style>
 </head>
 <body>
@@ -151,25 +133,29 @@
     <div class="header">
         <div class="logo">METEOR-IX</div>
         <div style="font-size: 0.7rem; color: var(--text-dim); font-family: 'JetBrains Mono';">
-            <span class="status-dot"></span>STATION ACTIVE | IST
+            STATION: DIAMOND HARBOUR | IST
+        </div>
+    </div>
+
+    <div class="sentry-banner" id="sentry-box">
+        <span id="sentry-emoji" style="font-size: 1.5rem;">😊</span>
+        <div id="sentry-text" style="font-weight: 500; letter-spacing: 0.5px; color: var(--safe-green);">
+            NO WARNING, YOU ARE SAFE.
         </div>
     </div>
 
     <div class="container">
         <div class="card">
-            <div class="label">Atmospheric Pressure</div>
+            <div style="font-size: 0.7rem; color: var(--text-dim); margin-bottom: 8px; text-transform: uppercase;">Pressure</div>
             <div class="value" id="pres-val">--.-<span class="unit"> hPa</span></div>
-            <div id="trend-text" style="font-size: 0.8rem; color: var(--accent-blue);">DYNAMIC TRACKING</div>
         </div>
 
         <div class="card">
-            <div class="label">Ambient Temperature</div>
+            <div style="font-size: 0.7rem; color: var(--text-dim); margin-bottom: 8px; text-transform: uppercase;">Temperature</div>
             <div class="value" id="temp-val">--.-<span class="unit"> °C</span></div>
-            <div style="font-size: 0.8rem; color: var(--text-dim);">SENSOR CLOUD SYNC</div>
         </div>
 
         <div class="chart-container">
-            <div class="label">Pressure Variation (Real-time IST)</div>
             <canvas id="weatherChart"></canvas>
         </div>
     </div>
@@ -186,13 +172,12 @@
             data: {
                 labels: [], 
                 datasets: [{
-                    label: 'Pressure',
                     data: [],
                     borderColor: '#00d2ff',
                     borderWidth: 2,
                     pointRadius: 0,
                     fill: true,
-                    backgroundColor: 'rgba(0, 210, 255, 0.03)',
+                    backgroundColor: 'rgba(0, 210, 255, 0.05)',
                     tension: 0.4
                 }]
             },
@@ -201,23 +186,67 @@
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
-                    x: { ticks: { color: '#444', font: { size: 10 } } },
-                    y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#666' } }
+                    x: { 
+                        ticks: { 
+                            color: '#555', 
+                            font: { size: 10, family: "'JetBrains Mono'" },
+                            maxRotation: 0, 
+                            autoSkip: true, 
+                            maxTicksLimit: 5 // Forces a clean look on all screens
+                        }, 
+                        grid: { display: false } 
+                    },
+                    y: { 
+                        grid: { color: 'rgba(255,255,255,0.03)' }, 
+                        ticks: { color: '#555', font: { size: 10 } } 
+                    }
                 }
             }
         });
 
-        function updateAmbientEffect(temp) {
+        function applyStormWarning(isActive) {
+            const box = document.getElementById('sentry-box');
+            const emoji = document.getElementById('sentry-emoji');
+            const text = document.getElementById('sentry-text');
+            const glowL = document.getElementById('ambient-l');
+            const glowR = document.getElementById('ambient-r');
+
+            if (isActive) {
+                box.style.background = "rgba(255, 62, 62, 0.15)";
+                box.style.borderColor = "var(--warn-red)";
+                emoji.innerText = "⚠️😱";
+                text.innerText = "WARNING: UNSTABLE PRESSURE DETECTED";
+                text.style.color = "var(--warn-red)";
+                
+                glowL.style.background = "var(--warn-red)";
+                glowR.style.background = "var(--warn-red)";
+                glowL.classList.add('warning-active');
+                glowR.classList.add('warning-active');
+            } else {
+                box.style.background = "rgba(255, 255, 255, 0.03)";
+                box.style.borderColor = "var(--border)";
+                emoji.innerText = "😊";
+                text.innerText = "NO WARNING, YOU ARE SAFE.";
+                text.style.color = "var(--safe-green)";
+                
+                glowL.classList.remove('warning-active');
+                glowR.classList.remove('warning-active');
+            }
+        }
+
+        function updateAmbientColor(temp, isWarning) {
+            if (isWarning) return; 
+
             let color = "";
-            if (temp >= 40) color = "rgba(139, 0, 0, 0.4)";       // Blackish Red
-            else if (temp >= 35) color = "rgba(255, 0, 0, 0.4)";   // Red
-            else if (temp >= 30) color = "rgba(255, 69, 0, 0.4)";  // Reddish Orange
-            else if (temp >= 23) color = "rgba(255, 165, 0, 0.4)"; // Orange
-            else color = "rgba(0, 255, 127, 0.4)";                 // Greenish/Blue variant
+            if (temp >= 40) color = "rgba(139, 0, 0, 0.4)";
+            else if (temp >= 35) color = "rgba(255, 0, 0, 0.4)";
+            else if (temp >= 30) color = "rgba(255, 69, 0, 0.4)";
+            else if (temp >= 23) color = "rgba(255, 165, 0, 0.4)";
+            else color = "rgba(0, 210, 255, 0.3)";
 
             document.getElementById('ambient-l').style.background = color;
             document.getElementById('ambient-r').style.background = color;
-            document.getElementById('temp-val').style.color = color.replace('0.4', '1');
+            document.getElementById('temp-val').style.color = color.replace('0.4', '1').replace('0.3', '1');
         }
 
         function updateDashboard() {
@@ -225,26 +254,34 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data && data.length > 0) {
-                        const latest = data[data.length - 1]; 
-                        
+                        const latest = data[data.length - 1];
                         document.getElementById('temp-val').childNodes[0].nodeValue = latest.temp.toFixed(1);
                         document.getElementById('pres-val').childNodes[0].nodeValue = latest.pres.toFixed(1);
 
-                        updateAmbientEffect(latest.temp);
+                        let stormDetected = false;
+                        if (data.length >= 120) {
+                            const twoHoursAgo = data[0].pres;
+                            const drop = twoHoursAgo - latest.pres;
+                            if (drop >= 1.5) stormDetected = true;
+                        }
 
-                        const labels = data.map(d => d.timestamp.split(' ')[1]);
-                        const pressures = data.map(d => d.pres);
+                        applyStormWarning(stormDetected);
+                        updateAmbientColor(latest.temp, stormDetected);
 
+                        // Only show the last 40 points for a cleaner graph view
+                        const graphData = data.slice(-40);
+                        const labels = graphData.map(d => d.timestamp.split(' ')[1].substring(0, 5));
+                        const pressures = graphData.map(d => d.pres);
+                        
                         weatherChart.data.labels = labels;
                         weatherChart.data.datasets[0].data = pressures;
                         weatherChart.update();
                     }
-                })
-                .catch(error => console.error('Sync Error:', error));
+                });
         }
 
         setInterval(updateDashboard, 60000);
-        updateDashboard(); 
+        updateDashboard();
     </script>
 </body>
 </html>
