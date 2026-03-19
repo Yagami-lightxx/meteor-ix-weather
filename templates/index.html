@@ -184,20 +184,23 @@
             fetch('/get_data')
                 .then(response => response.json())
                 .then(data => {
-                    // Since Python sends a list like [{'temp': 27, 'pres': 1012}, ...]
-                    // We need to pick the first one [0]
-                    if (data.length > 0) {
+                    if (data && data.length > 0) {
                         const latest = data[0]; 
-                        document.getElementById('temp').innerText = latest.temp.toFixed(1);
-                        document.getElementById('pres').innerText = latest.pres.toFixed(1);
                         
-                        // If you have a 'last-updated' element, add this too:
-                        // document.getElementById('last-updated').innerText = latest.timestamp;
+                        // Matches the IDs in your HTML exactly
+                        const tempElement = document.getElementById('temp-val');
+                        const presElement = document.getElementById('pres-val');
+
+                        if (tempElement && latest.temp !== undefined) {
+                            tempElement.childNodes[0].nodeValue = latest.temp.toFixed(1);
+                        }
+                        if (presElement && latest.pres !== undefined) {
+                            presElement.childNodes[0].nodeValue = latest.pres.toFixed(1);
+                        }
                     }
                 })
-                .catch(error => console.error('Error fetching data:', error));
+                .catch(error => console.error('Dashboard Sync Failed:', error));
         }
-
         // Make sure it runs every 30 seconds
         setInterval(updateDashboard, 30000);
         updateDashboard(); // Run once on load
