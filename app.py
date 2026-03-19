@@ -57,8 +57,7 @@ def get_data():
     # This returns: [[id, time, temp, pres], [id, time, temp, pres]...]
     return jsonify(data)
 
-if __name__ == '__main__':
-    init_db()
-    # Render uses the PORT environment variable
-    port = int(os.environ.get("PORT", 5000))
+if __name__ == "__main__":
+    # Get port from environment variable or default to 10000 for Render
+    port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
