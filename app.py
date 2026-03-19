@@ -23,11 +23,15 @@ def index():
 @app.route('/update', methods=['POST'])
 def update():
     try:
-        data = request.get_json()
+        # This line is safer for microcontrollers
+        data = request.get_json(force=True, silent=True)
+        
+        if not data:
+            return jsonify({"status": "error", "message": "No JSON received"}), 400
+            
         temp = data.get('temp')
         pres = data.get('pres')
         
-        # Use ISO format for easier JavaScript parsing
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
         conn = sqlite3.connect('weather.db')
@@ -38,6 +42,7 @@ def update():
         conn.close()
         return jsonify({"status": "success"}), 200
     except Exception as e:
+        print(f"Error: {e}")
         return jsonify({"status": "error", "message": str(e)}), 400
 
 @app.route('/get_data')
