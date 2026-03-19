@@ -10,13 +10,13 @@
     <style>
         :root {
             --bg: #050505;
-            --card-bg: rgba(20, 20, 20, 0.7);
+            --card-bg: rgba(12, 12, 12, 0.8);
             --accent-blue: #00d2ff;
             --accent-orange: #ff9f43;
-            --accent-red: #ff4b2b;
             --text-main: #ffffff;
             --text-dim: #888888;
-            --border: rgba(255, 255, 255, 0.1);
+            --border: rgba(255, 255, 255, 0.08);
+            --ambient-color: rgba(0, 210, 255, 0.2); /* Default */
         }
 
         body {
@@ -28,6 +28,29 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Ambient Glow Effect */
+        .ambient-glow {
+            position: fixed;
+            width: 40vw;
+            height: 40vw;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
+            opacity: 0.5;
+            transition: background 2s ease-in-out;
+            animation: jiggle 8s infinite ease-in-out;
+        }
+        .glow-left { left: -15vw; top: 20vh; background: var(--ambient-color); }
+        .glow-right { right: -15vw; bottom: 10vh; background: var(--ambient-color); animation-delay: -4s; }
+
+        @keyframes jiggle {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 40px) scale(0.9); }
         }
 
         .header {
@@ -37,6 +60,7 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 30px;
+            z-index: 10;
         }
 
         .logo {
@@ -47,8 +71,7 @@
         }
 
         .status-dot {
-            height: 8px;
-            width: 8px;
+            height: 8px; width: 8px;
             background-color: #00ff00;
             border-radius: 50%;
             display: inline-block;
@@ -62,19 +85,15 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
+            z-index: 10;
         }
 
         .card {
             background: var(--card-bg);
-            backdrop-filter: blur(12px);
+            backdrop-filter: blur(20px);
             border: 1px solid var(--border);
             border-radius: 24px;
             padding: 24px;
-            transition: transform 0.3s ease;
-        }
-
-        .card:hover {
-            border-color: rgba(0, 210, 255, 0.3);
         }
 
         .label {
@@ -92,10 +111,7 @@
             margin-bottom: 4px;
         }
 
-        .unit {
-            font-size: 1rem;
-            color: var(--text-dim);
-        }
+        .unit { font-size: 1rem; color: var(--text-dim); }
 
         .chart-container {
             grid-column: 1 / -1;
@@ -107,23 +123,35 @@
         }
 
         .footer {
-            margin-top: 40px;
+            margin-top: 50px;
+            text-align: center;
             color: var(--text-dim);
             font-size: 0.8rem;
             letter-spacing: 1px;
+            line-height: 1.6;
         }
 
-        @media (max-width: 600px) {
-            .value { font-size: 2rem; }
+        .credits {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-main);
+            opacity: 0.6;
+            margin-top: 8px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
         }
+
+        @media (max-width: 600px) { .value { font-size: 2rem; } }
     </style>
 </head>
 <body>
 
+    <div class="ambient-glow glow-left" id="ambient-l"></div>
+    <div class="ambient-glow glow-right" id="ambient-r"></div>
+
     <div class="header">
         <div class="logo">METEOR-IX</div>
-        <div style="font-size: 0.8rem; color: var(--text-dim);">
-            <span class="status-dot"></span>STATION ACTIVE
+        <div style="font-size: 0.7rem; color: var(--text-dim); font-family: 'JetBrains Mono';">
+            <span class="status-dot"></span>STATION ACTIVE | IST
         </div>
     </div>
 
@@ -131,40 +159,41 @@
         <div class="card">
             <div class="label">Atmospheric Pressure</div>
             <div class="value" id="pres-val">--.-<span class="unit"> hPa</span></div>
-            <div id="trend-text" style="font-size: 0.9rem; color: var(--accent-blue);">Live Monitoring</div>
+            <div id="trend-text" style="font-size: 0.8rem; color: var(--accent-blue);">DYNAMIC TRACKING</div>
         </div>
 
         <div class="card">
             <div class="label">Ambient Temperature</div>
-            <div class="value" id="temp-val" style="color: var(--accent-orange);">--.-<span class="unit"> °C</span></div>
-            <div style="font-size: 0.9rem; color: var(--text-dim);">Live ESP8266 Sync</div>
+            <div class="value" id="temp-val">--.-<span class="unit"> °C</span></div>
+            <div style="font-size: 0.8rem; color: var(--text-dim);">SENSOR CLOUD SYNC</div>
         </div>
 
         <div class="chart-container">
-            <div class="label">Pressure Variation (Real-time Plot)</div>
+            <div class="label">Pressure Variation (Real-time IST)</div>
             <canvas id="weatherChart"></canvas>
         </div>
     </div>
 
-    <div class="footer">DIAMOND HARBOUR OBSERVATORY • 2026</div>
+    <div class="footer">
+        DIAMOND HARBOUR OBSERVATORY • 2026<br>
+        <div class="credits">Created by Ayus Das • Systems Architect</div>
+    </div>
 
     <script>
-        // Initialize Chart
         const ctx = document.getElementById('weatherChart').getContext('2d');
         const weatherChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: [], 
                 datasets: [{
-                    label: 'Pressure (hPa)',
+                    label: 'Pressure',
                     data: [],
                     borderColor: '#00d2ff',
-                    borderWidth: 3,
-                    pointRadius: 2,
-                    pointBackgroundColor: '#00d2ff',
+                    borderWidth: 2,
+                    pointRadius: 0,
                     fill: true,
-                    backgroundColor: 'rgba(0, 210, 255, 0.05)',
-                    tension: 0.3
+                    backgroundColor: 'rgba(0, 210, 255, 0.03)',
+                    tension: 0.4
                 }]
             },
             options: {
@@ -172,37 +201,37 @@
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
-                    x: { 
-                        ticks: { color: '#555', maxRotation: 0, autoSkip: true, maxTicksLimit: 10 }
-                    },
-                    y: { 
-                        grid: { color: 'rgba(255,255,255,0.05)' },
-                        ticks: { color: '#888', font: { family: 'JetBrains Mono' } }
-                    }
+                    x: { ticks: { color: '#444', font: { size: 10 } } },
+                    y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#666' } }
                 }
             }
         });
+
+        function updateAmbientEffect(temp) {
+            let color = "";
+            if (temp >= 40) color = "rgba(139, 0, 0, 0.4)";       // Blackish Red
+            else if (temp >= 35) color = "rgba(255, 0, 0, 0.4)";   // Red
+            else if (temp >= 30) color = "rgba(255, 69, 0, 0.4)";  // Reddish Orange
+            else if (temp >= 23) color = "rgba(255, 165, 0, 0.4)"; // Orange
+            else color = "rgba(0, 255, 127, 0.4)";                 // Greenish/Blue variant
+
+            document.getElementById('ambient-l').style.background = color;
+            document.getElementById('ambient-r').style.background = color;
+            document.getElementById('temp-val').style.color = color.replace('0.4', '1');
+        }
 
         function updateDashboard() {
             fetch('/get_data')
                 .then(response => response.json())
                 .then(data => {
                     if (data && data.length > 0) {
-                        // The last item in the list is the most recent
                         const latest = data[data.length - 1]; 
                         
-                        const tempElement = document.getElementById('temp-val');
-                        const presElement = document.getElementById('pres-val');
+                        document.getElementById('temp-val').childNodes[0].nodeValue = latest.temp.toFixed(1);
+                        document.getElementById('pres-val').childNodes[0].nodeValue = latest.pres.toFixed(1);
 
-                        if (tempElement) {
-                            tempElement.childNodes[0].nodeValue = latest.temp.toFixed(1);
-                        }
-                        if (presElement) {
-                            presElement.childNodes[0].nodeValue = latest.pres.toFixed(1);
-                        }
+                        updateAmbientEffect(latest.temp);
 
-                        // GRAPH PLOTTING LOGIC
-                        // Map labels to just show the Time (HH:MM)
                         const labels = data.map(d => d.timestamp.split(' ')[1]);
                         const pressures = data.map(d => d.pres);
 
@@ -211,10 +240,9 @@
                         weatherChart.update();
                     }
                 })
-                .catch(error => console.error('Dashboard Sync Failed:', error));
+                .catch(error => console.error('Sync Error:', error));
         }
 
-        // Run every 60 seconds (1 minute)
         setInterval(updateDashboard, 60000);
         updateDashboard(); 
     </script>

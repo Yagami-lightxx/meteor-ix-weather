@@ -1,7 +1,7 @@
 import os
 from flask import Flask, request, jsonify, render_template
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
@@ -29,10 +29,14 @@ def update():
         temp = data.get('temp')
         pres = data.get('pres')
         
+        # Calculate IST (UTC + 5:30)
+        ist_time = datetime.utcnow() + timedelta(hours=5, minutes=30)
+        timestamp_str = ist_time.strftime("%Y-%m-%d %H:%M:%S")
+        
         with sqlite3.connect('weather.db') as conn:
             c = conn.cursor()
             c.execute("INSERT INTO readings (timestamp, temp, pres) VALUES (?, ?, ?)",
-                      (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), temp, pres))
+                      (timestamp_str, temp, pres))
             conn.commit()
         return jsonify({"status": "success"}), 200
     except Exception as e:
