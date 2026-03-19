@@ -180,33 +180,27 @@
             }
         });
 
-        // Function to Fetch Data from your Python API
-        async function updateDashboard() {
-            try {
-                const response = await fetch('/get_data');
-                const data = await response.json();
-                
-                if (data.length > 0) {
-                    const latest = data[0]; // Assuming Python returns sorted list [timestamp, temp, pres]
-                    
-                    // Update Text Values
-                    document.getElementById('temp-val').innerHTML = `${latest[2].toFixed(1)}<span class="unit"> °C</span>`;
-                    document.getElementById('pres-val').innerHTML = `${latest[3].toFixed(1)}<span class="unit"> hPa</span>`;
-                    
-                    // Update Chart
-                    const chartData = data.slice(0, 50).reverse();
-                    weatherChart.data.labels = chartData.map(d => d[1]);
-                    weatherChart.data.datasets[0].data = chartData.map(d => d[3]);
-                    weatherChart.update();
-                }
-            } catch (e) {
-                console.error("Dashboard Sync Failed", e);
-            }
+        function updateDashboard() {
+            fetch('/get_data')
+                .then(response => response.json())
+                .then(data => {
+                    // Since Python sends a list like [{'temp': 27, 'pres': 1012}, ...]
+                    // We need to pick the first one [0]
+                    if (data.length > 0) {
+                        const latest = data[0]; 
+                        document.getElementById('temp').innerText = latest.temp.toFixed(1);
+                        document.getElementById('pres').innerText = latest.pres.toFixed(1);
+                        
+                        // If you have a 'last-updated' element, add this too:
+                        // document.getElementById('last-updated').innerText = latest.timestamp;
+                    }
+                })
+                .catch(error => console.error('Error fetching data:', error));
         }
 
-        // Auto-refresh every 30 seconds
+        // Make sure it runs every 30 seconds
         setInterval(updateDashboard, 30000);
-        updateDashboard();
+        updateDashboard(); // Run once on load
     </script>
 </body>
 </html>

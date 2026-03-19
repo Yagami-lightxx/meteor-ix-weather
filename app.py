@@ -44,14 +44,18 @@ def update():
 def get_data():
     with sqlite3.connect('weather.db') as conn:
         c = conn.cursor()
-        c.execute("SELECT timestamp, temp, pres FROM readings ORDER BY id DESC LIMIT 50")
-        readings = c.fetchall()
+        # Order by ID DESC so the newest data is always at index [0]
+        c.execute("SELECT timestamp, temp, pres FROM readings ORDER BY id DESC LIMIT 1")
+        r = c.fetchone()
     
-    return jsonify([{
-        'timestamp': r[0],
-        'temp': r[1],
-        'pres': r[2]
-    } for r in readings])
+    if r:
+        # Return as a list containing one dictionary
+        return jsonify([{
+            'timestamp': r[0],
+            'temp': r[1],
+            'pres': r[2]
+        }])
+    return jsonify([])
 
 if __name__ == "__main__":
     # This part is for local testing only; Render uses Gunicorn instead
