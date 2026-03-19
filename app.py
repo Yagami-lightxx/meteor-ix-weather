@@ -40,7 +40,7 @@ def update():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
-@app.route('/data')
+@app.route('/get_data')
 def get_data():
     with sqlite3.connect('weather.db') as conn:
         c = conn.cursor()
