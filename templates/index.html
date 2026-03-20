@@ -168,8 +168,8 @@
                     x: { 
                         ticks: { 
                             color: '#555', 
-                            maxRotation: 0, // Keeps labels horizontal
-                            autoSkip: false, // We handle skipping manually for "Smart" look
+                            maxRotation: 0, 
+                            autoSkip: false, 
                             font: { size: 9, family: 'JetBrains Mono' } 
                         }, 
                         grid: { display: false } 
@@ -182,19 +182,12 @@
             }
         });
 
-        // SMART LABEL FILTER: Only shows specific timestamps to keep the UI clean
         function getSmartLabels(history) {
             const fullLabels = history.map(d => d.timestamp.split(' ')[1].substring(0,5));
             const len = fullLabels.length;
             if (len <= 6) return fullLabels;
-
-            // Indices for requested gaps: Current, 1m, 5m (1+4), 11m (5+6), 21m (11+10), 36m (21+15)
             const targetIndices = [len-1, len-2, len-6, len-12, len-22, len-37];
-            
-            return fullLabels.map((label, index) => {
-                // Only return the text if the index matches our "Smart" target
-                return targetIndices.includes(index) ? label : '';
-            });
+            return fullLabels.map((label, index) => targetIndices.includes(index) ? label : '');
         }
 
         function animateValue(id, start, end, duration) {
@@ -213,37 +206,60 @@
         function updateDashboard() {
             fetch('/get_data').then(res => res.json()).then(data => {
                 const latest = data.history[data.history.length - 1];
+                const glowL = document.getElementById('glow-l');
+                const glowR = document.getElementById('glow-r');
+                const box = document.getElementById('sentry-box');
+                const tempVal = document.getElementById('temp-val');
                 
-                // Heartbeat & Status
+                // 1. Status Heartbeat
                 const hbDot = document.getElementById('hb-dot');
                 hbDot.className = 'heartbeat pulse-anim';
                 hbDot.style.color = 'var(--safe-green)';
                 hbDot.style.background = 'var(--safe-green)';
                 document.getElementById('hb-text').innerText = 'STATION ONLINE';
 
+                // 2. Value Animations
                 animateValue('pres-val', lastPres || latest.pres - 2, latest.pres, 1500);
                 animateValue('temp-val', lastTemp || latest.temp - 2, latest.temp, 1500);
                 lastPres = latest.pres; lastTemp = latest.temp;
 
+                // 3. Extremes
                 document.getElementById('max-t').innerText = data.extremes.max_temp.toFixed(1);
                 document.getElementById('min-t').innerText = data.extremes.min_temp.toFixed(1);
                 document.getElementById('max-p').innerText = data.extremes.max_pres.toFixed(1);
                 document.getElementById('min-p').innerText = data.extremes.min_pres.toFixed(1);
 
-                // Alert Banner Logic
+                // 4. SYNCED COLOR LOGIC (The Fix)
                 let drop = data.history[0].pres - latest.pres;
-                const box = document.getElementById('sentry-box');
-                if (drop >= 1.2) {
-                    box.style.borderColor = drop >= 3.0 ? 'var(--warn-red)' : 'var(--warn-orange)';
-                    document.getElementById('sentry-text').innerText = drop >= 3.0 ? "SEVERE STORM RISK" : "UNSETTLED TREND";
-                    document.getElementById('sentry-text').style.color = drop >= 3.0 ? 'var(--warn-red)' : 'var(--warn-orange)';
+                let themeColor = 'var(--accent-blue)'; // Default
+
+                if (drop >= 3.0) {
+                    themeColor = 'var(--warn-red)';
+                    box.style.borderColor = themeColor;
+                    document.getElementById('sentry-text').innerText = "SEVERE STORM RISK";
+                    document.getElementById('sentry-text').style.color = themeColor;
+                    document.getElementById('sentry-emoji').innerText = "⚡";
+                } else if (drop >= 1.2) {
+                    themeColor = 'var(--warn-orange)';
+                    box.style.borderColor = themeColor;
+                    document.getElementById('sentry-text').innerText = "UNSETTLED TREND";
+                    document.getElementById('sentry-text').style.color = themeColor;
+                    document.getElementById('sentry-emoji').innerText = "☁️";
                 } else {
                     box.style.borderColor = 'var(--border)';
                     document.getElementById('sentry-text').innerText = "ATMOSPHERE STABLE";
                     document.getElementById('sentry-text').style.color = 'var(--safe-green)';
+                    document.getElementById('sentry-emoji').innerText = "😊";
+                    // If stable, color ambient based on heat
+                    themeColor = (latest.temp > 32) ? 'var(--warn-orange)' : 'var(--accent-blue)';
                 }
 
-                // --- THE FIX: SMART TIMESTAMPS ---
+                // Apply synced colors to Ambient Glow and Temp Text
+                glowL.style.background = themeColor;
+                glowR.style.background = themeColor;
+                tempVal.style.color = (latest.temp > 32) ? 'var(--warn-orange)' : 'var(--accent-blue)';
+
+                // 5. Chart Updates
                 weatherChart.data.labels = getSmartLabels(data.history);
                 weatherChart.data.datasets[0].data = data.history.map(d => d.pres);
                 
