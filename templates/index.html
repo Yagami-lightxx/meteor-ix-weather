@@ -19,88 +19,100 @@
             --warn-red: #ff3e3e;
         }
 
-        body { background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; margin: 0; padding: 20px; overflow-x: hidden; min-height: 100vh; }
+        body { background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; margin: 0; padding: 15px; overflow-x: hidden; min-height: 100vh; }
 
-        /* 7. ADAPTIVE WEATHER FOG (Enhanced) */
+        /* ADAPTIVE WEATHER FOG */
         .ambient-glow {
-            position: fixed; width: 70vw; height: 70vw; border-radius: 50%;
-            filter: blur(120px); z-index: -1; opacity: 0.25;
-            transition: background 3s cubic-bezier(0.4, 0, 0.2, 1), transform 8s infinite alternate;
-            animation: flow 20s infinite alternate ease-in-out;
+            position: fixed; width: 80vw; height: 80vw; border-radius: 50%;
+            filter: blur(120px); z-index: -1; opacity: 0.2;
+            transition: background 3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: flow 25s infinite alternate ease-in-out;
         }
         @keyframes flow {
-            0% { transform: translate(-10%, -10%) scale(1); }
-            100% { transform: translate(10%, 10%) scale(1.2); }
+            0% { transform: translate(-15%, -15%) scale(1); }
+            100% { transform: translate(15%, 15%) scale(1.1); }
         }
 
-        /* 2 & 3. LIVE HEARTBEAT ANIMATION */
-        .heartbeat { 
-            width: 10px; height: 10px; border-radius: 50%; 
-            display: inline-block; margin-right: 8px; 
-            box-shadow: 0 0 10px currentColor;
-        }
+        /* LIVE HEARTBEAT */
+        .heartbeat { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 8px; box-shadow: 0 0 10px currentColor; }
         .pulse-anim { animation: hb-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         @keyframes hb-pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(0.8); } }
 
-        .header { width: 100%; max-width: 1000px; margin: 0 auto 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header { width: 100%; max-width: 1000px; margin: 10px auto 20px; display: flex; justify-content: space-between; align-items: center; }
         
-        /* 5. GLASSMORPHISM & Z-AXIS */
+        /* MOBILE FIX: GRID ADJUSTMENT */
+        .container { 
+            width: 100%; max-width: 1000px; margin: 0 auto; 
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; 
+        }
+
+        @media (max-width: 600px) {
+            .container { grid-template-columns: 1fr; }
+            .value { font-size: 2.8rem !important; }
+            .header { flex-direction: column; gap: 10px; text-align: center; }
+        }
+
+        /* GLASSMORPHISM */
         .card { 
             background: var(--card-bg); backdrop-filter: blur(25px); 
-            border: 1px solid var(--border); border-radius: 30px; padding: 30px; 
-            transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            border: 1px solid var(--border); border-radius: 24px; padding: 25px; 
+            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
-        .card:hover { 
-            transform: translateY(-12px) scale(1.02); 
-            border-color: rgba(255,255,255,0.15);
-            box-shadow: 0 25px 50px rgba(0,0,0,0.6);
-        }
+        .card:hover { transform: translateY(-8px); border-color: rgba(255,255,255,0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
 
         .sentry-banner {
-            width: 100%; max-width: 1000px; margin: 0 auto 25px; padding: 20px; border-radius: 20px;
+            width: 100%; max-width: 1000px; margin: 0 auto 20px; padding: 18px; border-radius: 20px;
             background: var(--card-bg); border: 1px solid var(--border); backdrop-filter: blur(15px);
-            display: flex; align-items: center; justify-content: center; gap: 15px; 
-            transition: all 1s ease;
+            display: flex; align-items: center; justify-content: center; gap: 12px; transition: 1s ease;
         }
 
-        .container { width: 100%; max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .chart-container { grid-column: 1 / -1; height: 350px; background: var(--card-bg); border-radius: 30px; padding: 25px; border: 1px solid var(--border); }
-        
-        .value { font-family: 'JetBrains Mono'; font-size: 3.5rem; letter-spacing: -2px; }
-        .extremes { display: flex; justify-content: space-between; margin-top: 20px; color: var(--text-dim); font-family: 'JetBrains Mono'; font-size: 0.75rem; border-top: 1px solid var(--border); padding-top: 15px; }
+        .chart-container { grid-column: 1 / -1; height: 320px; background: var(--card-bg); border-radius: 24px; padding: 20px; border: 1px solid var(--border); }
+        .value { font-family: 'JetBrains Mono'; font-size: 3.2rem; letter-spacing: -2px; }
+        .extremes { display: flex; justify-content: space-between; margin-top: 15px; color: var(--text-dim); font-family: 'JetBrains Mono'; font-size: 0.7rem; border-top: 1px solid var(--border); padding-top: 12px; }
+
+        /* PROFESSIONAL FOOTER */
+        .footer {
+            max-width: 800px; margin: 40px auto 20px; text-align: center;
+            opacity: 0; animation: fadeIn 2s forwards 1s;
+        }
+        .advisory-text { font-size: 0.75rem; color: var(--text-dim); line-height: 1.6; font-style: italic; margin-bottom: 20px; padding: 0 20px; }
+        .footer-credits { font-family: 'JetBrains Mono'; font-size: 0.7rem; letter-spacing: 1px; color: #444; text-transform: uppercase; }
+        .footer-credits span { color: var(--accent-blue); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
-    <div class="ambient-glow" style="left: -15%; top: -10%; background: var(--accent-blue);" id="glow-l"></div>
-    <div class="ambient-glow" style="right: -15%; bottom: -10%; background: var(--accent-blue);" id="glow-r"></div>
+    <div class="ambient-glow" style="left: -10%; top: -10%; background: var(--accent-blue);" id="glow-l"></div>
+    <div class="ambient-glow" style="right: -10%; bottom: -10%; background: var(--accent-blue);" id="glow-r"></div>
 
     <div class="header">
-        <div style="color: var(--accent-blue); font-weight: 600; letter-spacing: 3px; font-size: 0.9rem;">METEOR-IX SYSTEMS</div>
-        <div style="font-family: 'JetBrains Mono'; font-size: 0.65rem; color: var(--text-dim);">
+        <div style="color: var(--accent-blue); font-weight: 600; letter-spacing: 2px; font-size: 0.85rem;">METEOR-IX SYSTEMS</div>
+        <div style="font-family: 'JetBrains Mono'; font-size: 0.6rem; color: var(--text-dim);">
             <span id="hb-dot" class="heartbeat"></span> <span id="hb-text">LINKING...</span>
         </div>
     </div>
 
     <div class="sentry-banner" id="sentry-box">
-        <span id="sentry-emoji" style="font-size: 2rem;">🛰️</span>
-        <div id="sentry-text" style="font-weight: 600; letter-spacing: 1px;">CALIBRATING ANALYTICS...</div>
+        <span id="sentry-emoji" style="font-size: 1.8rem;">📡</span>
+        <div id="sentry-text" style="font-weight: 600; font-size: 0.9rem; letter-spacing: 0.5px;">INITIALIZING...</div>
     </div>
 
     <div class="container">
         <div class="card">
-            <div style="font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 10px;">Barometric Pressure</div>
+            <div style="font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px;">Barometric Pressure</div>
             <div class="value" id="pres-val">1013.0</div>
             <div class="extremes">
-                <span>MAX <span id="max-p" style="color: #eee;">--</span></span>
-                <span>MIN <span id="min-p" style="color: #eee;">--</span></span>
+                <span>MAX <span id="max-p" style="color: #888;">--</span></span>
+                <span>MIN <span id="min-p" style="color: #888;">--</span></span>
             </div>
         </div>
         <div class="card">
-            <div style="font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 10px;">Temperature</div>
+            <div style="font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px;">Temperature</div>
             <div class="value" id="temp-val">27.0</div>
             <div class="extremes">
-                <span>MAX <span id="max-t" style="color: #eee;">--</span></span>
-                <span>MIN <span id="min-t" style="color: #eee;">--</span></span>
+                <span>MAX <span id="max-t" style="color: #888;">--</span></span>
+                <span>MIN <span id="min-t" style="color: #888;">--</span></span>
             </div>
         </div>
         <div class="chart-container">
@@ -108,15 +120,27 @@
         </div>
     </div>
 
+    <div class="footer">
+        <p class="advisory-text">
+            DATA ADVISORY: METEOR-IX uses localized barometric pressure trends for experimental analysis. 
+            These automated alerts are not official life-safety warnings. For emergency protocols, 
+            please refer to the India Meteorological Department (IMD).
+        </p>
+        <div class="footer-credits">
+            Version • 0.0.3.1 Intelligence<br>
+            DIAMOND HARBOUR OBSERVATORY • 2026<br><br>
+            Created by <span>Ayus Das</span> • Systems Architect
+        </div>
+    </div>
+
     <script>
         let lastPres = 0, lastTemp = 0;
         const ctx = document.getElementById('weatherChart').getContext('2d');
         
-        // 6. HIGH-PERFORMANCE CHART ENTRANCE
         const weatherChart = new Chart(ctx, {
             type: 'line',
             data: { labels: [], datasets: [{ 
-                data: [], borderColor: '#00d2ff', borderWidth: 3, 
+                data: [], borderColor: '#00d2ff', borderWidth: 2, 
                 fill: true, backgroundColor: 'rgba(0, 210, 255, 0.03)', 
                 tension: 0.4, pointRadius: 0 
             }] },
@@ -125,13 +149,12 @@
                 animation: { duration: 2500, easing: 'easeOutQuart' },
                 plugins: { legend: { display: false } },
                 scales: { 
-                    x: { ticks: { color: '#333', font: { size: 9 } }, grid: { display: false } },
-                    y: { grid: { color: 'rgba(255,255,255,0.02)' }, ticks: { color: '#333' } } 
+                    x: { ticks: { color: '#333', font: { size: 8 } }, grid: { display: false } },
+                    y: { grid: { color: 'rgba(255,255,255,0.02)' }, ticks: { color: '#333', font: { size: 8 } } } 
                 }
             }
         });
 
-        // 4. COUNT-UP TRANSITION
         function animateValue(id, start, end, duration) {
             const obj = document.getElementById(id);
             if (start === end) return;
@@ -149,61 +172,52 @@
             fetch('/get_data').then(res => res.json()).then(data => {
                 const latest = data.history[data.history.length - 1];
                 
-                // 2. HEARTBEAT UPDATE
                 const hbDot = document.getElementById('hb-dot');
                 hbDot.className = 'heartbeat pulse-anim';
                 hbDot.style.color = 'var(--safe-green)';
                 hbDot.style.background = 'var(--safe-green)';
                 document.getElementById('hb-text').innerText = 'STATION ONLINE';
 
-                // 4. VALUE UPDATES
-                animateValue('pres-val', lastPres || latest.pres - 5, latest.pres, 1500);
+                animateValue('pres-val', lastPres || latest.pres - 2, latest.pres, 1500);
                 animateValue('temp-val', lastTemp || latest.temp - 2, latest.temp, 1500);
                 lastPres = latest.pres; lastTemp = latest.temp;
 
-                // 1. EXTREMES
                 document.getElementById('max-t').innerText = data.extremes.max_temp.toFixed(1);
                 document.getElementById('min-t').innerText = data.extremes.min_temp.toFixed(1);
                 document.getElementById('max-p').innerText = data.extremes.max_pres.toFixed(1);
                 document.getElementById('min-p').innerText = data.extremes.min_pres.toFixed(1);
 
-                // 8. SENTRY & RED ZONE
                 let drop = data.history[0].pres - latest.pres;
                 const box = document.getElementById('sentry-box');
                 const glowL = document.getElementById('glow-l');
                 const glowR = document.getElementById('glow-r');
                 
                 if (drop >= 3.0) {
-                    box.style.background = 'rgba(255, 62, 62, 0.1)';
                     box.style.borderColor = 'var(--warn-red)';
-                    document.getElementById('sentry-text').innerText = "SEVERE STORM RISK: RED ZONE ACTIVE";
+                    document.getElementById('sentry-text').innerText = "SEVERE STORM RISK: RED ZONE";
                     document.getElementById('sentry-text').style.color = 'var(--warn-red)';
                     document.getElementById('sentry-emoji').innerText = "⚡";
                     glowL.style.background = 'var(--warn-red)';
                     glowR.style.background = 'var(--warn-red)';
                 } else if (drop >= 1.2) {
-                    box.style.background = 'rgba(255, 159, 67, 0.1)';
                     box.style.borderColor = 'var(--warn-orange)';
-                    document.getElementById('sentry-text').innerText = "UNSETTLED: MODERATE CONVECTIVE TREND";
+                    document.getElementById('sentry-text').innerText = "UNSETTLED: CONVECTIVE TREND";
                     document.getElementById('sentry-text').style.color = 'var(--warn-orange)';
                     document.getElementById('sentry-emoji').innerText = "☁️";
                     glowL.style.background = 'var(--warn-orange)';
                     glowR.style.background = 'var(--warn-orange)';
                 } else {
-                    box.style.background = 'var(--card-bg)';
+                    box.style.borderColor = 'var(--border)';
                     document.getElementById('sentry-text').innerText = "ATMOSPHERE STABLE";
                     document.getElementById('sentry-text').style.color = 'var(--safe-green)';
                     document.getElementById('sentry-emoji').innerText = "😊";
-                    // 7. ADAPTIVE FOG COLOR
                     let tempCol = (latest.temp > 30) ? 'var(--warn-orange)' : 'var(--accent-blue)';
                     glowL.style.background = tempCol;
                     glowR.style.background = tempCol;
                 }
 
-                // 9. FIX: COLOR CONSISTENCY
                 document.getElementById('temp-val').style.color = (latest.temp > 30) ? 'var(--warn-orange)' : 'var(--accent-blue)';
 
-                // Update Chart
                 weatherChart.data.labels = data.history.map(d => d.timestamp.split(' ')[1].substring(0,5));
                 weatherChart.data.datasets[0].data = data.history.map(d => d.pres);
                 weatherChart.update();
