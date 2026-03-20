@@ -106,17 +106,14 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 10px;
-            padding: 0 2px;
+            gap: 10px; padding: 0 2px;
         }
         .logo-wrap { display: flex; align-items: baseline; gap: 6px; flex-shrink: 0; }
         .logo-text {
-            font-family: var(--font-head);
-            font-weight: 800;
+            font-family: var(--font-head); font-weight: 800;
             font-size: clamp(0.95rem, 3.8vw, 1.32rem);
             letter-spacing: clamp(2px, 1.2vw, 5px);
-            color: var(--blue);
-            text-shadow: 0 0 26px rgba(0,200,255,0.55);
+            color: var(--blue); text-shadow: 0 0 26px rgba(0,200,255,0.55);
         }
         .logo-ver {
             font-family: var(--font-mono);
@@ -151,8 +148,7 @@
         /* WAKE BANNER */
         .wake-banner {
             display: none;
-            padding: 14px 18px;
-            border-radius: 16px;
+            padding: 14px 18px; border-radius: 16px;
             border: 1px solid rgba(0,200,255,0.25);
             background: rgba(0,200,255,0.07);
             align-items: center; gap: 12px;
@@ -161,8 +157,7 @@
         .wake-spin {
             width: 14px; height: 14px; flex-shrink: 0;
             border: 2px solid rgba(0,200,255,0.2);
-            border-top-color: var(--blue);
-            border-radius: 50%;
+            border-top-color: var(--blue); border-radius: 50%;
             animation: wspin 0.9s linear infinite;
         }
         @keyframes wspin { to { transform: rotate(360deg); } }
@@ -174,8 +169,7 @@
         .wake-attempt {
             margin-left: auto; flex-shrink: 0;
             font-family: var(--font-mono);
-            font-size: 0.5rem; color: var(--text-mid);
-            letter-spacing: 1px;
+            font-size: 0.5rem; color: var(--text-mid); letter-spacing: 1px;
         }
 
         /* SENTRY */
@@ -217,8 +211,7 @@
         }
         .sentry-pulse {
             position: absolute; right: 14px; top: 50%;
-            transform: translateY(-50%);
-            width: 32px; height: 32px;
+            transform: translateY(-50%); width: 32px; height: 32px;
         }
         .sentry-pulse circle {
             fill: none; stroke: var(--green); stroke-width: 1.8;
@@ -239,10 +232,8 @@
         @media(max-width:520px){ .metrics-row { grid-template-columns: 1fr; } }
 
         .card {
-            background: var(--surface-1);
-            border: 1px solid var(--border-dim);
-            border-radius: var(--r);
-            padding: 20px 18px 18px;
+            background: var(--surface-1); border: 1px solid var(--border-dim);
+            border-radius: var(--r); padding: 20px 18px 18px;
             position: relative; overflow: hidden;
         }
         .card::after {
@@ -267,10 +258,10 @@
         }
         .card-pressure.pop { --pc: rgba(0,200,255,0.2); animation: cardPop 0.75s ease forwards; }
         .card-temp.pop     { --pc: rgba(255,140,66,0.2); animation: cardPop 0.75s ease forwards; }
+
         .card-label {
-            font-family: var(--font-mono);
-            font-size: 0.54rem; letter-spacing: 3px;
-            color: var(--text-dim); margin-bottom: 12px;
+            font-family: var(--font-mono); font-size: 0.54rem;
+            letter-spacing: 3px; color: var(--text-dim); margin-bottom: 12px;
             display: flex; align-items: center; gap: 7px;
         }
         .card-label::before { content:''; display:inline-block; width:14px; height:1px; background:currentColor; }
@@ -281,24 +272,33 @@
             letter-spacing: -1px; transition: color 1.2s ease;
         }
         .metric-unit {
-            font-family: var(--font-mono);
-            font-size: 0.55rem; color: var(--text-mid);
-            letter-spacing: 2px; margin-top: 6px;
+            font-family: var(--font-mono); font-size: 0.55rem;
+            color: var(--text-mid); letter-spacing: 2px; margin-top: 6px;
         }
+
+        /* ── TREND TAG — now has a fixed height so it never collapses ── */
         .trend-tag {
-            display: inline-flex; align-items: center; gap: 5px;
-            font-family: var(--font-mono);
-            font-size: 0.54rem; padding: 4px 9px;
-            border-radius: 20px; margin-top: 11px;
+            display: flex; align-items: center; gap: 6px;
+            font-family: var(--font-mono); font-size: 0.54rem;
+            padding: 5px 10px; border-radius: 20px; margin-top: 12px;
             background: var(--surface-2); color: var(--text-mid);
             transition: color 0.4s ease, background 0.4s ease;
+            min-height: 26px;
         }
+        /* coloured dot inside trend tag */
+        .trend-dot {
+            width: 5px; height: 5px; border-radius: 50%;
+            background: currentColor; flex-shrink: 0;
+            transition: background 0.4s ease;
+        }
+
         .card-bar {
             position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
             background: linear-gradient(to right, transparent, var(--bc,rgba(0,200,255,0.45)), transparent);
         }
         .card-pressure .card-bar { --bc: rgba(0,200,255,0.5); }
         .card-temp     .card-bar { --bc: rgba(255,140,66,0.5); }
+
         @keyframes countUp {
             0%   { opacity:0; transform:translateY(9px) scale(0.97); }
             100% { opacity:1; transform:translateY(0) scale(1); }
@@ -307,10 +307,8 @@
 
         /* CHART */
         .chart-section {
-            background: var(--surface-1);
-            border: 1px solid var(--border-dim);
-            border-radius: var(--r);
-            padding: 20px 18px 16px;
+            background: var(--surface-1); border: 1px solid var(--border-dim);
+            border-radius: var(--r); padding: 20px 18px 16px;
             position: relative; overflow: hidden;
         }
         .chart-header {
@@ -318,8 +316,7 @@
             margin-bottom: 16px; flex-wrap: wrap; gap: 8px;
         }
         .chart-title {
-            font-family: var(--font-head);
-            font-weight: 700; font-size: 0.8rem;
+            font-family: var(--font-head); font-weight: 700; font-size: 0.8rem;
             letter-spacing: 2px; color: var(--text-mid); text-transform: uppercase;
         }
         .chart-badges { display: flex; gap: 7px; flex-wrap: wrap; }
@@ -352,7 +349,8 @@
         }
         .stat-box-label {
             font-family: var(--font-mono); font-size: 0.5rem;
-            color: var(--text-dim); letter-spacing: 1.5px; margin-bottom: 7px; text-transform: uppercase;
+            color: var(--text-dim); letter-spacing: 1.5px;
+            margin-bottom: 7px; text-transform: uppercase;
         }
         .stat-box-val {
             font-family: var(--font-mono);
@@ -489,14 +487,21 @@
                 <div class="card-label">PRESSURE</div>
                 <div class="metric-value" id="pres-val">—</div>
                 <div class="metric-unit">hPa · BAROMETRIC</div>
-                <div class="trend-tag" id="pres-trend">— AWAITING DATA</div>
+                <!-- trend tag now uses inner spans for dot + text -->
+                <div class="trend-tag" id="pres-trend">
+                    <span class="trend-dot" id="pres-dot"></span>
+                    <span id="pres-trend-text">LOADING…</span>
+                </div>
                 <div class="card-bar"></div>
             </div>
             <div class="card card-temp" id="card-temp">
                 <div class="card-label">TEMPERATURE</div>
                 <div class="metric-value" id="temp-val">—</div>
                 <div class="metric-unit">°C · AMBIENT</div>
-                <div class="trend-tag" id="temp-trend">— AWAITING DATA</div>
+                <div class="trend-tag" id="temp-trend">
+                    <span class="trend-dot" id="temp-dot"></span>
+                    <span id="temp-trend-text">LOADING…</span>
+                </div>
                 <div class="card-bar"></div>
             </div>
         </div>
@@ -566,17 +571,13 @@
     </div>
 
     <script>
-    // ─────────────────────────────────────────────────────────────────────────────
-    // CHART — built AFTER DOM is ready, gradient built inside requestAnimationFrame
-    // so the canvas is guaranteed to have its layout dimensions on all browsers.
-    // ─────────────────────────────────────────────────────────────────────────────
+    // ─── CHART ───────────────────────────────────────────────────────────────────
     let weatherChart = null;
 
     function initChart() {
         const cvs = document.getElementById('weatherChart');
         const ctx  = cvs.getContext('2d');
-
-        const h = cvs.clientHeight || 220;
+        const h    = cvs.clientHeight || 220;
         const grad = ctx.createLinearGradient(0, 0, 0, h);
         grad.addColorStop(0,   'rgba(0,200,255,0.22)');
         grad.addColorStop(0.6, 'rgba(0,200,255,0.04)');
@@ -613,35 +614,25 @@
                         borderWidth: 1,
                         titleFont: { family:"'Space Mono'", size:9 },
                         bodyFont:  { family:"'Space Mono'", size:10 },
-                        titleColor: '#6b7a8a',
-                        bodyColor:  '#00c8ff',
+                        titleColor: '#6b7a8a', bodyColor: '#00c8ff',
                         padding: 10,
                         callbacks: { label: c => `${c.parsed.y.toFixed(1)} hPa` }
                     }
                 },
                 scales: {
                     x: {
-                        grid: { display: false },
-                        border: { display: false },
-                        ticks: {
-                            color:'#2e3a44', font:{ size:8, family:"'Space Mono'" },
-                            maxRotation:0, autoSkip:true, maxTicksLimit:5
-                        }
+                        grid: { display: false }, border: { display: false },
+                        ticks: { color:'#2e3a44', font:{ size:8, family:"'Space Mono'" }, maxRotation:0, autoSkip:true, maxTicksLimit:5 }
                     },
                     y: {
-                        grid: { color:'rgba(255,255,255,0.03)' },
-                        border: { display: false },
-                        ticks: {
-                            color:'#2e3a44', font:{ size:8, family:"'Space Mono'" },
-                            callback: v => v.toFixed(0)
-                        }
+                        grid: { color:'rgba(255,255,255,0.03)' }, border: { display: false },
+                        ticks: { color:'#2e3a44', font:{ size:8, family:"'Space Mono'" }, callback: v => v.toFixed(0) }
                     }
                 }
             }
         });
     }
 
-    // Flash glowing dot at the newest chart point
     function flashDot() {
         if (!weatherChart) return;
         const meta = weatherChart.getDatasetMeta(0);
@@ -657,9 +648,20 @@
         setTimeout(() => dot.classList.remove('active'), 1100);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────────
-    // CLOCK
-    // ─────────────────────────────────────────────────────────────────────────────
+    window.addEventListener('resize', () => {
+        if (!weatherChart) return;
+        const cvs  = document.getElementById('weatherChart');
+        const ctx  = cvs.getContext('2d');
+        const h    = cvs.clientHeight || 220;
+        const grad = ctx.createLinearGradient(0, 0, 0, h);
+        grad.addColorStop(0,   'rgba(0,200,255,0.22)');
+        grad.addColorStop(0.6, 'rgba(0,200,255,0.04)');
+        grad.addColorStop(1,   'rgba(0,200,255,0)');
+        weatherChart.data.datasets[0].backgroundColor = grad;
+        weatherChart.update('none');
+    });
+
+    // ─── CLOCK ───────────────────────────────────────────────────────────────────
     (function tickClock() {
         const ist = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
         const p = n => String(n).padStart(2, '0');
@@ -668,20 +670,22 @@
         setTimeout(tickClock, 1000);
     })();
 
-    // ─────────────────────────────────────────────────────────────────────────────
-    // STATE
-    // ─────────────────────────────────────────────────────────────────────────────
-    let prevPres = null, prevTemp = null;
-    let fetchOk  = 0, fetchTotal = 0;
-    let dataLoaded = false;          // true once we have real data
+    // ─── STATE ───────────────────────────────────────────────────────────────────
+    // KEY FIX: prevPres/prevTemp are initialised to null.
+    // On the FIRST successful fetch we store the SECOND-TO-LAST reading as prev
+    // so the trend tag shows a real comparison immediately, not "AWAITING DATA".
+    let prevPres  = null;
+    let prevTemp  = null;
+    let fetchOk   = 0;
+    let fetchTotal = 0;
+    let dataLoaded = false;
     let retryCount = 0;
-    const MAX_RETRIES  = 12;         // 12 × 5s = 60s max cold-start window
-    const RETRY_MS     = 5000;
-    const NORMAL_MS    = 60000;
+    const MAX_RETRIES = 12;
+    const RETRY_MS    = 5000;
+    const NORMAL_MS   = 60000;
+    let scheduleTimer = null;
 
-    // ─────────────────────────────────────────────────────────────────────────────
-    // HELPERS
-    // ─────────────────────────────────────────────────────────────────────────────
+    // ─── SENTRY ──────────────────────────────────────────────────────────────────
     function applySentry(drop) {
         const box  = document.getElementById('sentry');
         const icon = document.getElementById('sentry-icon');
@@ -715,19 +719,43 @@
     const tempColor = t =>
         t>=40?'#ff2244':t>=35?'#ff5533':t>=30?'#ff8c42':t>=23?'#ffd166':'#00c8ff';
 
-    function setTrend(el, cur, prev, unit) {
-        if (prev===null) return;
-        const d = cur-prev, abs=Math.abs(d).toFixed(2);
-        if (d>0.015)     { el.textContent=`↑ +${abs} ${unit}`; el.style.color='#ff8c42'; el.style.background='rgba(255,140,66,.1)'; }
-        else if (d<-0.015){ el.textContent=`↓ −${abs} ${unit}`; el.style.color='#00c8ff'; el.style.background='rgba(0,200,255,.1)'; }
-        else              { el.textContent='→ STEADY'; el.style.color='var(--text-mid)'; el.style.background='var(--surface-2)'; }
+    // ─── TREND TAG ───────────────────────────────────────────────────────────────
+    // FIXED: uses separate inner spans for dot colour and text, always shows
+    // something useful — on first load compares latest vs second-to-last reading.
+    function setTrend(tagEl, dotEl, textEl, cur, prev) {
+        if (prev === null || prev === undefined) {
+            // Should not normally happen now, but safe fallback
+            textEl.textContent = '— NO PREV DATA';
+            tagEl.style.color  = 'var(--text-mid)';
+            dotEl.style.background = 'var(--text-mid)';
+            return;
+        }
+        const diff = cur - prev;
+        const abs  = Math.abs(diff).toFixed(2);
+
+        if (diff > 0.015) {
+            textEl.textContent     = `↑  +${abs}  since last`;
+            tagEl.style.color      = '#ff8c42';
+            dotEl.style.background = '#ff8c42';
+            tagEl.style.background = 'rgba(255,140,66,0.1)';
+        } else if (diff < -0.015) {
+            textEl.textContent     = `↓  −${abs}  since last`;
+            tagEl.style.color      = '#00c8ff';
+            dotEl.style.background = '#00c8ff';
+            tagEl.style.background = 'rgba(0,200,255,0.1)';
+        } else {
+            textEl.textContent     = '→  STEADY';
+            tagEl.style.color      = 'var(--text-mid)';
+            dotEl.style.background = 'var(--text-mid)';
+            tagEl.style.background = 'var(--surface-2)';
+        }
     }
 
     function popCard(id) {
-        const el=document.getElementById(id);
+        const el = document.getElementById(id);
         el.classList.remove('pop','shimmer'); void el.offsetWidth;
         el.classList.add('pop','shimmer');
-        setTimeout(()=>el.classList.remove('shimmer'),650);
+        setTimeout(() => el.classList.remove('shimmer'), 650);
     }
 
     function setNum(el, val) {
@@ -737,23 +765,43 @@
 
     function updateHealthBar() {
         if (!fetchTotal) return;
-        const pct = Math.round(fetchOk/fetchTotal*100);
-        document.getElementById('health-fill').style.width = pct+'%';
-        document.getElementById('health-pct').textContent  = pct+'%';
+        const pct = Math.round(fetchOk / fetchTotal * 100);
+        document.getElementById('health-fill').style.width = pct + '%';
+        document.getElementById('health-pct').textContent  = pct + '%';
     }
 
-    // ─────────────────────────────────────────────────────────────────────────────
-    // RENDER — paint all data onto the page
-    // ─────────────────────────────────────────────────────────────────────────────
+    // ─── RENDER DATA ─────────────────────────────────────────────────────────────
     function renderData(data) {
         document.getElementById('wake-banner').classList.remove('show');
-        document.getElementById('last-update').textContent =
-            `UPDATED ${data[data.length-1].timestamp.split(' ')[1].slice(0,5)} IST`;
 
-        const latest = data[data.length-1];
+        const latest = data[data.length - 1];
+
+        // ── KEY FIX FOR TREND TAG ──────────────────────────────────────────────
+        // On the very first load, use the second-to-last DB reading as "prev"
+        // so the trend tag is instantly meaningful. On subsequent polls the
+        // previous reading is whatever was shown before (stored in prevPres/prevTemp).
+        // This means the trend tag ALWAYS shows a real value — never "AWAITING DATA".
+        let usedPrevPres, usedPrevTemp;
+
+        if (!dataLoaded && data.length >= 2) {
+            // First load and we have at least 2 rows: compare latest vs previous DB entry
+            usedPrevPres = data[data.length - 2].pres;
+            usedPrevTemp = data[data.length - 2].temp;
+        } else if (!dataLoaded && data.length === 1) {
+            // Only one reading ever stored — show steady
+            usedPrevPres = latest.pres;
+            usedPrevTemp = latest.temp;
+        } else {
+            // Normal subsequent poll — compare against what was shown last time
+            usedPrevPres = prevPres;
+            usedPrevTemp = prevTemp;
+        }
+        // ─────────────────────────────────────────────────────────────────────
+
         const wasFirst = !dataLoaded;
         dataLoaded = true;
 
+        // Update number displays
         setNum(document.getElementById('pres-val'), latest.pres.toFixed(1));
         if (!wasFirst) popCard('card-pres');
 
@@ -762,34 +810,49 @@
         tEl.style.color = tempColor(latest.temp);
         if (!wasFirst) popCard('card-temp');
 
-        setTrend(document.getElementById('pres-trend'), latest.pres, prevPres, 'hPa');
-        setTrend(document.getElementById('temp-trend'), latest.temp, prevTemp, '°C');
-        prevPres = latest.pres; prevTemp = latest.temp;
+        // Update trend tags — always has real data now
+        setTrend(
+            document.getElementById('pres-trend'),
+            document.getElementById('pres-dot'),
+            document.getElementById('pres-trend-text'),
+            latest.pres, usedPrevPres
+        );
+        setTrend(
+            document.getElementById('temp-trend'),
+            document.getElementById('temp-dot'),
+            document.getElementById('temp-trend-text'),
+            latest.temp, usedPrevTemp
+        );
 
-        const ps = data.map(d=>d.pres);
-        const hi=Math.max(...ps), lo=Math.min(...ps);
-        document.getElementById('stat-pmax').textContent  = hi.toFixed(1);
-        document.getElementById('stat-pmin').textContent  = lo.toFixed(1);
-        document.getElementById('stat-count').textContent = data.length;
-        document.getElementById('range-badge').textContent = `${(hi-lo).toFixed(1)} hPa RANGE`;
+        // Store current as prev for next poll
+        prevPres = latest.pres;
+        prevTemp = latest.temp;
 
-        applySentry(data.length>1 ? data[0].pres-latest.pres : 0);
+        // Session stats
+        const ps = data.map(d => d.pres);
+        const hi = Math.max(...ps), lo = Math.min(...ps);
+        document.getElementById('stat-pmax').textContent   = hi.toFixed(1);
+        document.getElementById('stat-pmin').textContent   = lo.toFixed(1);
+        document.getElementById('stat-count').textContent  = data.length;
+        document.getElementById('range-badge').textContent = `${(hi - lo).toFixed(1)} hPa RANGE`;
 
+        // Sentry
+        applySentry(data.length > 1 ? data[0].pres - latest.pres : 0);
+
+        // Chart
         if (weatherChart) {
             const sl = data.slice(-40);
-            weatherChart.data.labels           = sl.map(d=>d.timestamp.split(' ')[1].slice(0,5));
-            weatherChart.data.datasets[0].data = sl.map(d=>d.pres);
+            weatherChart.data.labels           = sl.map(d => d.timestamp.split(' ')[1].slice(0, 5));
+            weatherChart.data.datasets[0].data = sl.map(d => d.pres);
             weatherChart.update();
         }
+
+        // Timestamp
+        document.getElementById('last-update').textContent =
+            `UPDATED  ${latest.timestamp.split(' ')[1].slice(0, 5)}  IST`;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────────
-    // FETCH — single function, called on a schedule
-    // The key insight: we use ONE timer variable and always clear+reset it.
-    // This avoids any double-fire / race condition.
-    // ─────────────────────────────────────────────────────────────────────────────
-    let scheduleTimer = null;
-
+    // ─── FETCH SCHEDULER ─────────────────────────────────────────────────────────
     function scheduleFetch(delayMs) {
         if (scheduleTimer) clearTimeout(scheduleTimer);
         scheduleTimer = setTimeout(doFetch, delayMs);
@@ -801,7 +864,7 @@
         spin.classList.add('active');
         fetchTotal++;
 
-        fetch('/get_data', { cache: 'no-store' })   // 'no-store' prevents mobile browser caching
+        fetch('/get_data', { cache: 'no-store' })
             .then(r => {
                 if (!r.ok) throw new Error('HTTP ' + r.status);
                 return r.json();
@@ -811,68 +874,41 @@
                 spin.classList.remove('active');
                 updateHealthBar();
 
-                // Empty array = server is up but DB has no rows yet (first ever boot)
                 if (!data || data.length === 0) throw new Error('empty');
 
-                // ✅ We have real data
                 retryCount = 0;
                 renderData(data);
-
-                // Schedule next normal poll
                 scheduleFetch(NORMAL_MS);
             })
-            .catch(err => {
+            .catch(() => {
                 spin.classList.remove('active');
                 updateHealthBar();
 
                 if (!dataLoaded && retryCount < MAX_RETRIES) {
                     retryCount++;
                     document.getElementById('wake-banner').classList.add('show');
-                    document.getElementById('wake-attempt').textContent =
-                        `${retryCount} / ${MAX_RETRIES}`;
-                    lupEl.textContent = `WAKING SERVER…`;
-                    // Retry quickly while cold-starting
+                    document.getElementById('wake-attempt').textContent = `${retryCount} / ${MAX_RETRIES}`;
+                    lupEl.textContent = 'WAKING SERVER…';
                     scheduleFetch(RETRY_MS);
                 } else if (!dataLoaded) {
-                    // Gave up
                     document.getElementById('wake-banner').classList.remove('show');
                     lupEl.textContent = 'SERVER OFFLINE — PULL TO REFRESH';
-                    scheduleFetch(NORMAL_MS); // keep trying in background
+                    scheduleFetch(NORMAL_MS);
                 } else {
-                    // Normal fetch failure after data was already loaded
                     lupEl.textContent = 'FETCH ERROR — RETRYING';
                     scheduleFetch(NORMAL_MS);
                 }
             });
     }
 
-    // ─────────────────────────────────────────────────────────────────────────────
-    // BOOT — wait for fonts + layout, THEN init chart and start fetching
-    // This is critical: if we init Chart.js before layout is painted, the canvas
-    // has 0 height and the gradient is invisible on mobile.
-    // ─────────────────────────────────────────────────────────────────────────────
-    window.addEventListener('load', function() {
-        // Use rAF to ensure the browser has completed layout and paint
-        requestAnimationFrame(function() {
-            requestAnimationFrame(function() {
+    // ─── BOOT ────────────────────────────────────────────────────────────────────
+    window.addEventListener('load', function () {
+        requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
                 initChart();
-                doFetch();   // kick off immediately
+                doFetch();
             });
         });
-    });
-
-    // Rebuild chart gradient on orientation change
-    window.addEventListener('resize', function() {
-        if (!weatherChart) return;
-        const cvs  = document.getElementById('weatherChart');
-        const ctx  = cvs.getContext('2d');
-        const h    = cvs.clientHeight || 220;
-        const grad = ctx.createLinearGradient(0, 0, 0, h);
-        grad.addColorStop(0,   'rgba(0,200,255,0.22)');
-        grad.addColorStop(0.6, 'rgba(0,200,255,0.04)');
-        grad.addColorStop(1,   'rgba(0,200,255,0)');
-        weatherChart.data.datasets[0].backgroundColor = grad;
-        weatherChart.update('none');
     });
     </script>
 </body>
