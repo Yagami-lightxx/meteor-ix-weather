@@ -3,297 +3,844 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>METEOR-IX | Weather Intelligence</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <title>METEOR-IX | Diamond Harbour Observatory</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
     <style>
         :root {
-            --bg: #050505;
-            --card-bg: rgba(12, 12, 12, 0.8);
-            --accent-blue: #00d2ff;
-            --accent-orange: #ff9f43;
-            --text-main: #ffffff;
-            --text-dim: #888888;
-            --border: rgba(255, 255, 255, 0.08);
-            --warn-red: #ff3e3e;
-            --warn-orange: #ff9f43;
-            --safe-green: #00ff88;
+            --bg: #030305;
+            --surface-1: rgba(255,255,255,0.025);
+            --surface-2: rgba(255,255,255,0.05);
+            --border-dim: rgba(255,255,255,0.06);
+            --border-glow: rgba(0, 200, 255, 0.3);
+            --blue: #00c8ff;
+            --blue-dim: rgba(0, 200, 255, 0.12);
+            --orange: #ff8c42;
+            --orange-dim: rgba(255,140,66,0.12);
+            --red: #ff3b5c;
+            --red-dim: rgba(255,59,92,0.12);
+            --green: #00f5a0;
+            --green-dim: rgba(0,245,160,0.10);
+            --text: #f0f4f8;
+            --text-mid: #7a8898;
+            --text-dim: #3d4a56;
+            --font-mono: 'Space Mono', monospace;
+            --font-head: 'Syne', sans-serif;
+            --font-body: 'DM Sans', sans-serif;
         }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; }
 
         body {
-            background-color: var(--bg);
-            color: var(--text-main);
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            padding: 20px;
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font-body);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* ── NOISE TEXTURE OVERLAY ── */
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+            opacity: 0.025;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        /* ── AURORA BLOBS ── */
+        .aurora {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(120px);
+            pointer-events: none;
+            z-index: 0;
+            transition: background 2s ease, opacity 1.5s ease;
+        }
+        .aurora-a {
+            width: 70vw; height: 70vw;
+            top: -20vh; left: -20vw;
+            background: radial-gradient(circle, rgba(0,200,255,0.18) 0%, transparent 70%);
+            animation: drift-a 18s ease-in-out infinite;
+        }
+        .aurora-b {
+            width: 60vw; height: 60vw;
+            bottom: -15vh; right: -15vw;
+            background: radial-gradient(circle, rgba(255,140,66,0.12) 0%, transparent 70%);
+            animation: drift-b 22s ease-in-out infinite;
+        }
+        .aurora-c {
+            width: 40vw; height: 40vw;
+            top: 40vh; left: 30vw;
+            background: radial-gradient(circle, rgba(0,245,160,0.06) 0%, transparent 70%);
+            animation: drift-a 28s ease-in-out infinite reverse;
+        }
+
+        @keyframes drift-a {
+            0%,100% { transform: translate(0,0) scale(1); }
+            33% { transform: translate(4vw,-6vh) scale(1.08); }
+            66% { transform: translate(-3vw, 5vh) scale(0.95); }
+        }
+        @keyframes drift-b {
+            0%,100% { transform: translate(0,0) scale(1); }
+            40% { transform: translate(-5vw, 4vh) scale(1.12); }
+            70% { transform: translate(3vw,-3vh) scale(0.92); }
+        }
+
+        /* ── SCAN LINE ── */
+        .scanline {
+            position: fixed; inset: 0;
+            background: repeating-linear-gradient(
+                to bottom,
+                transparent 0px,
+                transparent 3px,
+                rgba(0,0,0,0.07) 3px,
+                rgba(0,0,0,0.07) 4px
+            );
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        /* ── LAYOUT ── */
+        .shell {
+            position: relative;
+            z-index: 10;
+            max-width: 1080px;
+            margin: 0 auto;
+            padding: 32px 24px 64px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            overflow-x: hidden;
-            min-height: 100vh;
+            gap: 28px;
         }
 
-        .ambient-glow {
-            position: fixed;
-            width: 45vw;
-            height: 45vw;
-            border-radius: 50%;
-            filter: blur(80px);
-            z-index: -1;
-            opacity: 0.4;
-            transition: all 1.5s ease-in-out;
-            animation: jiggle 8s infinite ease-in-out;
-        }
-        .glow-left { left: -15vw; top: 20vh; }
-        .glow-right { right: -15vw; bottom: 10vh; animation-delay: -4s; }
-
-        @keyframes jiggle {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(30px, -50px) scale(1.1); }
-            66% { transform: translate(-20px, 40px) scale(0.9); }
-        }
-
-        @keyframes warningFade {
-            0%, 100% { opacity: 0.3; transform: scale(1); }
-            50% { opacity: 0.8; transform: scale(1.2); }
-        }
-        .warning-active { animation: warningFade 2s infinite ease-in-out !important; }
-
-        .header {
-            width: 100%;
-            max-width: 1000px;
+        /* ── TOPBAR ── */
+        .topbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            z-index: 10;
+            padding: 0 4px;
+        }
+        .logo-wrap { display: flex; align-items: baseline; gap: 10px; }
+        .logo-text {
+            font-family: var(--font-head);
+            font-weight: 800;
+            font-size: 1.4rem;
+            letter-spacing: 6px;
+            color: var(--blue);
+            text-shadow: 0 0 30px rgba(0,200,255,0.5);
+        }
+        .logo-ver {
+            font-family: var(--font-mono);
+            font-size: 0.6rem;
+            color: var(--text-dim);
+            letter-spacing: 2px;
+        }
+        .topbar-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 3px;
+        }
+        .topbar-station {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            color: var(--text-mid);
+            letter-spacing: 2px;
+        }
+        .live-dot-wrap {
+            display: flex; align-items: center; gap: 6px;
+        }
+        .live-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--green);
+            box-shadow: 0 0 8px var(--green);
+            animation: blink 2s ease-in-out infinite;
+        }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+        .live-label {
+            font-family: var(--font-mono);
+            font-size: 0.6rem;
+            color: var(--green);
+            letter-spacing: 2px;
         }
 
-        .logo { font-weight: 600; letter-spacing: 4px; font-size: 1.1rem; color: var(--accent-blue); }
-
-        .sentry-banner {
-            width: 100%;
-            max-width: 1000px;
-            padding: 15px;
-            border-radius: 16px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border);
+        /* ── SENTRY BANNER ── */
+        .sentry {
+            position: relative;
+            padding: 18px 24px;
+            border-radius: 20px;
+            border: 1px solid var(--border-dim);
+            background: var(--surface-1);
             display: flex;
             align-items: center;
-            justify-content: center;
-            margin-bottom: 25px;
-            gap: 12px;
-            transition: all 0.5s ease;
+            gap: 16px;
+            overflow: hidden;
+            transition: background 0.8s ease, border-color 0.8s ease;
+        }
+        .sentry::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 3px;
+            border-radius: 3px 0 0 3px;
+            background: var(--green);
+            transition: background 0.8s ease;
+            box-shadow: 0 0 16px currentColor;
+        }
+        .sentry-icon { font-size: 1.8rem; flex-shrink: 0; }
+        .sentry-content { flex: 1; }
+        .sentry-label {
+            font-family: var(--font-mono);
+            font-size: 0.6rem;
+            color: var(--text-mid);
+            letter-spacing: 3px;
+            margin-bottom: 3px;
+        }
+        .sentry-msg {
+            font-family: var(--font-head);
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--green);
+            letter-spacing: 1px;
+            transition: color 0.8s ease;
+        }
+        .sentry-drop {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            color: var(--text-mid);
+            letter-spacing: 1px;
+        }
+        .sentry-pulse {
+            position: absolute; right: 20px; top: 50%;
+            transform: translateY(-50%);
+            width: 40px; height: 40px;
+        }
+        .sentry-pulse circle {
+            fill: none; stroke: var(--green);
+            stroke-width: 2;
+            transform-origin: center;
+            animation: pulse-ring 3s ease-out infinite;
+        }
+        .sentry-pulse circle:nth-child(2) { animation-delay: 1s; }
+        @keyframes pulse-ring {
+            0% { r: 4; opacity: 0.8; }
+            100% { r: 18; opacity: 0; }
         }
 
-        .container {
-            width: 100%;
-            max-width: 1000px;
+        /* WARNING STATES */
+        .sentry.warn-2 { border-color: rgba(255,140,66,0.4); background: rgba(255,140,66,0.06); }
+        .sentry.warn-2::before { background: var(--orange); }
+        .sentry.warn-3 { border-color: rgba(255,59,92,0.5); background: rgba(255,59,92,0.08); }
+        .sentry.warn-3::before { background: var(--red); animation: strobe 1s ease-in-out infinite; }
+        @keyframes strobe { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+        /* ── METRIC CARDS ── */
+        .metrics-row {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: 1fr 1fr;
             gap: 20px;
-            z-index: 10;
         }
+        @media(max-width:600px){ .metrics-row { grid-template-columns: 1fr; } }
 
         .card {
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--border);
+            background: var(--surface-1);
+            border: 1px solid var(--border-dim);
             border-radius: 24px;
-            padding: 24px;
+            padding: 28px;
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.5s ease;
+        }
+        .card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: radial-gradient(ellipse at 30% 0%, var(--accent-splash, rgba(0,200,255,0.05)) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        .card-pressure { --accent-splash: rgba(0,200,255,0.07); }
+        .card-temp { --accent-splash: rgba(255,140,66,0.07); }
+
+        .card-label {
+            font-family: var(--font-mono);
+            font-size: 0.6rem;
+            letter-spacing: 3px;
+            color: var(--text-dim);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card-label::before {
+            content: '';
+            display: inline-block;
+            width: 20px; height: 1px;
+            background: currentColor;
         }
 
-        .value { font-family: 'JetBrains Mono', monospace; font-size: 2.5rem; font-weight: 500; }
-        .unit { font-size: 1rem; color: var(--text-dim); }
-
-        .chart-container {
-            grid-column: 1 / -1;
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            padding: 24px;
-            height: 320px;
+        .metric-value {
+            font-family: var(--font-head);
+            font-size: 3.8rem;
+            font-weight: 800;
+            line-height: 1;
+            color: var(--text);
+            transition: color 1s ease;
+            letter-spacing: -2px;
+        }
+        .metric-unit {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-mid);
+            letter-spacing: 2px;
+            margin-top: 8px;
         }
 
-        .footer { margin-top: 50px; text-align: center; color: var(--text-dim); font-size: 0.75rem; max-width: 600px; }
-        .disclaimer { margin-bottom: 15px; font-style: italic; line-height: 1.4; border-top: 1px solid var(--border); padding-top: 15px; }
-        .credits { font-family: 'JetBrains Mono', monospace; color: var(--text-main); opacity: 0.6; margin-top: 5px; }
+        .card-bar {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(to right, transparent, var(--bar-color, rgba(0,200,255,0.5)), transparent);
+        }
+        .card-pressure .card-bar { --bar-color: var(--blue); }
+        .card-temp .card-bar { --bar-color: var(--orange); }
+
+        /* Trend indicator */
+        .trend-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-family: var(--font-mono);
+            font-size: 0.6rem;
+            padding: 4px 8px;
+            border-radius: 20px;
+            margin-top: 12px;
+            letter-spacing: 1px;
+            background: var(--surface-2);
+            color: var(--text-mid);
+            transition: all 0.5s ease;
+        }
+        .trend-arrow { font-size: 0.65rem; }
+
+        /* ── CHART SECTION ── */
+        .chart-section {
+            background: var(--surface-1);
+            border: 1px solid var(--border-dim);
+            border-radius: 24px;
+            padding: 28px;
+            position: relative;
+            overflow: hidden;
+        }
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        .chart-title {
+            font-family: var(--font-head);
+            font-weight: 700;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            color: var(--text-mid);
+            text-transform: uppercase;
+        }
+        .chart-badge {
+            font-family: var(--font-mono);
+            font-size: 0.58rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: var(--blue-dim);
+            color: var(--blue);
+            border: 1px solid rgba(0,200,255,0.2);
+            letter-spacing: 1px;
+        }
+        .chart-wrap { height: 260px; }
+
+        /* ── STATUS ROW ── */
+        .status-row {
+            display: grid;
+            grid-template-columns: repeat(3,1fr);
+            gap: 14px;
+        }
+        @media(max-width:600px){ .status-row { grid-template-columns: 1fr; } }
+
+        .stat-box {
+            background: var(--surface-1);
+            border: 1px solid var(--border-dim);
+            border-radius: 16px;
+            padding: 18px;
+            text-align: center;
+        }
+        .stat-box-label {
+            font-family: var(--font-mono);
+            font-size: 0.55rem;
+            color: var(--text-dim);
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        .stat-box-val {
+            font-family: var(--font-head);
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .stat-box-sub {
+            font-family: var(--font-mono);
+            font-size: 0.55rem;
+            color: var(--text-mid);
+            margin-top: 4px;
+            letter-spacing: 1px;
+        }
+
+        /* ── TIMESTAMP BAR ── */
+        .time-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 4px;
+        }
+        .time-now {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            letter-spacing: 2px;
+        }
+        .time-update {
+            display: flex; align-items: center; gap: 8px;
+            font-family: var(--font-mono);
+            font-size: 0.6rem;
+            color: var(--text-dim);
+        }
+        .spinner {
+            width: 12px; height: 12px;
+            border: 1.5px solid var(--text-dim);
+            border-top-color: var(--blue);
+            border-radius: 50%;
+            animation: spin 1.2s linear infinite;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .spinner.active { opacity: 1; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── FOOTER ── */
+        .footer {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-dim);
+        }
+        .footer-disclaimer {
+            font-family: var(--font-body);
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            line-height: 1.7;
+            max-width: 600px;
+            margin: 0 auto 16px;
+            font-style: italic;
+        }
+        .footer-credit {
+            font-family: var(--font-mono);
+            font-size: 0.6rem;
+            color: var(--text-dim);
+            letter-spacing: 2px;
+        }
+        .footer-credit span {
+            color: var(--blue);
+            text-shadow: 0 0 12px rgba(0,200,255,0.4);
+        }
+
+        /* ── ENTRY ANIMATION ── */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(18px);
+            animation: fadeUp 0.7s ease forwards;
+        }
+        @keyframes fadeUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in:nth-child(1) { animation-delay: 0.1s; }
+        .fade-in:nth-child(2) { animation-delay: 0.2s; }
+        .fade-in:nth-child(3) { animation-delay: 0.3s; }
+        .fade-in:nth-child(4) { animation-delay: 0.4s; }
+        .fade-in:nth-child(5) { animation-delay: 0.5s; }
+        .fade-in:nth-child(6) { animation-delay: 0.6s; }
+        .fade-in:nth-child(7) { animation-delay: 0.7s; }
+
+        /* value flip animation */
+        @keyframes valueFlip {
+            0% { transform: translateY(-8px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        .value-flash { animation: valueFlip 0.4s ease forwards; }
+
+        /* GLOW card hover */
+        .card:hover {
+            border-color: rgba(255,255,255,0.1);
+        }
     </style>
 </head>
 <body>
 
-    <div class="ambient-glow glow-left" id="ambient-l"></div>
-    <div class="ambient-glow glow-right" id="ambient-r"></div>
+    <div class="aurora aurora-a" id="aurora-a"></div>
+    <div class="aurora aurora-b" id="aurora-b"></div>
+    <div class="aurora aurora-c"></div>
+    <div class="scanline"></div>
 
-    <div class="header">
-        <div class="logo">METEOR-IX <span style="font-size: 0.6rem; opacity: 0.5;">v0.0.2.1</span></div>
-        <div style="font-size: 0.7rem; color: var(--text-dim); font-family: 'JetBrains Mono';">
-            STATION: DIAMOND HARBOUR | IST
-        </div>
-    </div>
+    <div class="shell">
 
-    <div class="sentry-banner" id="sentry-box">
-        <span id="sentry-emoji" style="font-size: 1.5rem;">😊</span>
-        <div id="sentry-text" style="font-weight: 500; letter-spacing: 0.5px; color: var(--safe-green);">
-            NO WARNING, YOU ARE SAFE.
-        </div>
-    </div>
-
-    <div class="container">
-        <div class="card">
-            <div style="font-size: 0.7rem; color: var(--text-dim); margin-bottom: 8px; text-transform: uppercase;">Pressure</div>
-            <div class="value" id="pres-val">--.-<span class="unit"> hPa</span></div>
-        </div>
-
-        <div class="card">
-            <div style="font-size: 0.7rem; color: var(--text-dim); margin-bottom: 8px; text-transform: uppercase;">Temperature</div>
-            <div class="value" id="temp-val">--.-<span class="unit"> °C</span></div>
+        <!-- TOPBAR -->
+        <div class="topbar fade-in">
+            <div class="logo-wrap">
+                <div class="logo-text">METEOR-IX</div>
+                <div class="logo-ver">v0.0.2.1</div>
+            </div>
+            <div class="topbar-right">
+                <div class="topbar-station">DIAMOND HARBOUR · IST</div>
+                <div class="live-dot-wrap">
+                    <div class="live-dot"></div>
+                    <div class="live-label">LIVE</div>
+                </div>
+            </div>
         </div>
 
-        <div class="chart-container">
-            <canvas id="weatherChart"></canvas>
+        <!-- SENTRY BANNER -->
+        <div class="sentry fade-in" id="sentry">
+            <div class="sentry-icon" id="sentry-icon">😊</div>
+            <div class="sentry-content">
+                <div class="sentry-label">SENTRY ALGORITHM · STATUS</div>
+                <div class="sentry-msg" id="sentry-msg">STABLE — NO WARNINGS ACTIVE</div>
+                <div class="sentry-drop" id="sentry-drop">2HR ΔPRES: — hPa</div>
+            </div>
+            <svg class="sentry-pulse" id="sentry-pulse" viewBox="0 0 40 40">
+                <circle cx="20" cy="20" r="4"/>
+                <circle cx="20" cy="20" r="4"/>
+            </svg>
         </div>
-    </div>
 
-    <div class="footer">
-        <div class="disclaimer">
-            DATA ADVISORY: METEOR-IX uses localized barometric pressure trends for experimental analysis. These automated alerts are not official life-safety warnings. For emergency protocols, please refer to the India Meteorological Department (IMD).
+        <!-- METRICS ROW -->
+        <div class="metrics-row fade-in">
+            <!-- PRESSURE -->
+            <div class="card card-pressure">
+                <div class="card-label">PRESSURE</div>
+                <div class="metric-value" id="pres-val">—</div>
+                <div class="metric-unit">hPa  ·  BAROMETRIC</div>
+                <div class="trend-tag" id="pres-trend">
+                    <span class="trend-arrow">—</span>
+                    <span id="pres-trend-text">AWAITING DATA</span>
+                </div>
+                <div class="card-bar"></div>
+            </div>
+
+            <!-- TEMPERATURE -->
+            <div class="card card-temp">
+                <div class="card-label">TEMPERATURE</div>
+                <div class="metric-value" id="temp-val">—</div>
+                <div class="metric-unit">°C  ·  AMBIENT</div>
+                <div class="trend-tag" id="temp-trend">
+                    <span class="trend-arrow">—</span>
+                    <span id="temp-trend-text">AWAITING DATA</span>
+                </div>
+                <div class="card-bar"></div>
+            </div>
         </div>
-        Version • 0.0.2.1 <br>
-        DIAMOND HARBOUR OBSERVATORY • 2026<br>
-        <div class="credits">Created by Ayus Das • Systems Architect</div>
-    </div>
+
+        <!-- CHART -->
+        <div class="chart-section fade-in">
+            <div class="chart-header">
+                <div class="chart-title">Pressure History</div>
+                <div class="chart-badge">LAST 40 READINGS</div>
+            </div>
+            <div class="chart-wrap">
+                <canvas id="weatherChart"></canvas>
+            </div>
+        </div>
+
+        <!-- STATS ROW -->
+        <div class="status-row fade-in">
+            <div class="stat-box">
+                <div class="stat-box-label">Session Max Pres</div>
+                <div class="stat-box-val" id="stat-pmax">—</div>
+                <div class="stat-box-sub">hPa</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-box-label">Session Min Pres</div>
+                <div class="stat-box-val" id="stat-pmin">—</div>
+                <div class="stat-box-sub">hPa</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-box-label">Data Points</div>
+                <div class="stat-box-val" id="stat-count">—</div>
+                <div class="stat-box-sub">RECORDED</div>
+            </div>
+        </div>
+
+        <!-- TIME BAR -->
+        <div class="time-bar fade-in">
+            <div class="time-now" id="time-now">—</div>
+            <div class="time-update">
+                <div class="spinner" id="spinner"></div>
+                <span id="last-update">AWAITING FIRST FETCH</span>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="footer fade-in">
+            <div class="footer-disclaimer">
+                DATA ADVISORY: METEOR-IX uses localised barometric pressure trends for experimental analysis.
+                These automated alerts are not official life-safety warnings. For emergency protocols,
+                please refer to the India Meteorological Department (IMD).
+            </div>
+            <div class="footer-credit">
+                DIAMOND HARBOUR OBSERVATORY · 2026 &nbsp;·&nbsp;
+                BUILT BY <span>AYUS DAS</span> &nbsp;·&nbsp; SYSTEMS ARCHITECT
+            </div>
+        </div>
+
+    </div><!-- /shell -->
 
     <script>
-        const ctx = document.getElementById('weatherChart').getContext('2d');
-        const weatherChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: [], 
-                datasets: [{
-                    data: [],
-                    borderColor: '#00d2ff',
-                    borderWidth: 2,
-                    pointRadius: 0,
-                    fill: true,
-                    backgroundColor: 'rgba(0, 210, 255, 0.05)',
-                    tension: 0.4
-                }]
+    // ─── CHART SETUP ───────────────────────────────────────────────────────────
+    const ctx = document.getElementById('weatherChart').getContext('2d');
+
+    const gradFill = ctx.createLinearGradient(0, 0, 0, 260);
+    gradFill.addColorStop(0, 'rgba(0,200,255,0.18)');
+    gradFill.addColorStop(1, 'rgba(0,200,255,0)');
+
+    const weatherChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                data: [],
+                borderColor: 'rgba(0,200,255,0.85)',
+                borderWidth: 1.8,
+                pointRadius: 0,
+                pointHitRadius: 10,
+                fill: true,
+                backgroundColor: gradFill,
+                tension: 0.45
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: { duration: 800, easing: 'easeInOutQuart' },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(5,5,10,0.9)',
+                    borderColor: 'rgba(0,200,255,0.3)',
+                    borderWidth: 1,
+                    titleFont: { family: "'Space Mono'", size: 10 },
+                    bodyFont: { family: "'Space Mono'", size: 11 },
+                    titleColor: '#7a8898',
+                    bodyColor: '#00c8ff',
+                    padding: 10,
+                    callbacks: {
+                        label: ctx => `${ctx.parsed.y.toFixed(1)} hPa`
+                    }
+                }
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { 
-                        ticks: { 
-                            color: '#555', 
-                            font: { size: 10, family: "'JetBrains Mono'" },
-                            maxRotation: 0, 
-                            autoSkip: true, 
-                            maxTicksLimit: 5 
-                        }, 
-                        grid: { display: false } 
+            scales: {
+                x: {
+                    grid: { display: false },
+                    border: { display: false },
+                    ticks: {
+                        color: '#3d4a56',
+                        font: { size: 9, family: "'Space Mono'" },
+                        maxRotation: 0,
+                        autoSkip: true,
+                        maxTicksLimit: 6
+                    }
+                },
+                y: {
+                    grid: {
+                        color: 'rgba(255,255,255,0.03)',
+                        drawBorder: false
                     },
-                    y: { 
-                        grid: { color: 'rgba(255,255,255,0.03)' }, 
-                        ticks: { color: '#555', font: { size: 10 } } 
+                    border: { display: false, dash: [4,4] },
+                    ticks: {
+                        color: '#3d4a56',
+                        font: { size: 9, family: "'Space Mono'" },
+                        callback: v => v.toFixed(0)
                     }
                 }
             }
-        });
-
-        function applyTieredWarning(dropValue) {
-            const box = document.getElementById('sentry-box');
-            const emoji = document.getElementById('sentry-emoji');
-            const text = document.getElementById('sentry-text');
-            const glowL = document.getElementById('ambient-l');
-            const glowR = document.getElementById('ambient-r');
-
-            // Reset animations
-            glowL.classList.remove('warning-active');
-            glowR.classList.remove('warning-active');
-
-            if (dropValue >= 2.5) {
-                // TIER 3: CRITICAL DROP
-                box.style.background = "rgba(255, 62, 62, 0.15)";
-                box.style.borderColor = "var(--warn-red)";
-                emoji.innerText = "⚠️😱";
-                text.innerText = "CRITICAL: RAPID PRESSURE DROP DETECTED";
-                text.style.color = "var(--warn-red)";
-                glowL.style.background = "var(--warn-red)";
-                glowR.style.background = "var(--warn-red)";
-                glowL.classList.add('warning-active');
-                glowR.classList.add('warning-active');
-                return true;
-            } else if (dropValue >= 1.2) {
-                // TIER 2: UNSETTLED / MODERATE DROP
-                box.style.background = "rgba(255, 159, 67, 0.15)";
-                box.style.borderColor = "var(--warn-orange)";
-                emoji.innerText = "☁️🧐";
-                text.innerText = "UNSETTLED: MODERATE PRESSURE TREND";
-                text.style.color = "var(--warn-orange)";
-                glowL.style.background = "var(--warn-orange)";
-                glowR.style.background = "var(--warn-orange)";
-                return true;
-            } else {
-                // TIER 1: SAFE
-                box.style.background = "rgba(255, 255, 255, 0.03)";
-                box.style.borderColor = "var(--border)";
-                emoji.innerText = "😊";
-                text.innerText = "STABLE: NO WARNINGS ACTIVE";
-                text.style.color = "var(--safe-green)";
-                return false;
-            }
         }
+    });
 
-        function updateAmbientColor(temp, isWarning, dropValue) {
-            if (isWarning) return; 
+    // ─── STATE ─────────────────────────────────────────────────────────────────
+    let sessionMax = null, sessionMin = null;
+    let prevPres = null, prevTemp = null;
 
-            let color = "";
-            if (temp >= 40) color = "rgba(139, 0, 0, 0.4)";
-            else if (temp >= 35) color = "rgba(255, 0, 0, 0.4)";
-            else if (temp >= 30) color = "rgba(255, 69, 0, 0.4)";
-            else if (temp >= 23) color = "rgba(255, 165, 0, 0.4)";
-            else color = "rgba(0, 210, 255, 0.3)";
+    // ─── CLOCK ─────────────────────────────────────────────────────────────────
+    function tickClock() {
+        const now = new Date();
+        const ist = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+        const pad = n => String(n).padStart(2,'0');
+        document.getElementById('time-now').textContent =
+            `IST ${pad(ist.getHours())}:${pad(ist.getMinutes())}:${pad(ist.getSeconds())}`;
+    }
+    setInterval(tickClock, 1000);
+    tickClock();
 
-            document.getElementById('ambient-l').style.background = color;
-            document.getElementById('ambient-r').style.background = color;
-            document.getElementById('temp-val').style.color = color.replace('0.4', '1').replace('0.3', '1');
+    // ─── SENTRY ────────────────────────────────────────────────────────────────
+    function applySentry(drop) {
+        const box      = document.getElementById('sentry');
+        const icon     = document.getElementById('sentry-icon');
+        const msg      = document.getElementById('sentry-msg');
+        const dropEl   = document.getElementById('sentry-drop');
+        const aA       = document.getElementById('aurora-a');
+        const aB       = document.getElementById('aurora-b');
+        const pulseCircles = document.querySelectorAll('#sentry-pulse circle');
+
+        const dropSign = drop >= 0 ? '-' : '+';
+        const dropAbs  = Math.abs(drop).toFixed(2);
+        dropEl.textContent = `2HR ΔPRES: ${dropSign}${dropAbs} hPa`;
+
+        box.className = 'sentry';
+
+        if (drop >= 2.5) {
+            box.classList.add('warn-3');
+            icon.textContent = '⚠️';
+            msg.textContent  = 'CRITICAL — RAPID PRESSURE DROP';
+            msg.style.color  = 'var(--red)';
+            pulseCircles.forEach(c => c.style.stroke = 'var(--red)');
+            aA.style.background = 'radial-gradient(circle, rgba(255,59,92,0.25) 0%, transparent 70%)';
+            aB.style.background = 'radial-gradient(circle, rgba(255,59,92,0.18) 0%, transparent 70%)';
+            return true;
+        } else if (drop >= 1.2) {
+            box.classList.add('warn-2');
+            icon.textContent = '☁️';
+            msg.textContent  = 'UNSETTLED — MODERATE PRESSURE DROP';
+            msg.style.color  = 'var(--orange)';
+            pulseCircles.forEach(c => c.style.stroke = 'var(--orange)');
+            aA.style.background = 'radial-gradient(circle, rgba(255,140,66,0.22) 0%, transparent 70%)';
+            aB.style.background = 'radial-gradient(circle, rgba(255,140,66,0.15) 0%, transparent 70%)';
+            return true;
+        } else {
+            icon.textContent = '😊';
+            msg.textContent  = 'STABLE — NO WARNINGS ACTIVE';
+            msg.style.color  = 'var(--green)';
+            pulseCircles.forEach(c => c.style.stroke = 'var(--green)');
+            aA.style.background = 'radial-gradient(circle, rgba(0,200,255,0.18) 0%, transparent 70%)';
+            aB.style.background = 'radial-gradient(circle, rgba(255,140,66,0.12) 0%, transparent 70%)';
+            return false;
         }
+    }
 
-        function updateDashboard() {
-            fetch('/get_data')
-                .then(response => response.json())
-                .then(data => {
-                    if (data && data.length > 0) {
-                        const latest = data[data.length - 1];
-                        document.getElementById('temp-val').childNodes[0].nodeValue = latest.temp.toFixed(1);
-                        document.getElementById('pres-val').childNodes[0].nodeValue = latest.pres.toFixed(1);
+    // ─── TEMP COLOR ────────────────────────────────────────────────────────────
+    function tempColor(t) {
+        if (t >= 40) return '#ff1a1a';
+        if (t >= 35) return '#ff5533';
+        if (t >= 30) return '#ff8c42';
+        if (t >= 23) return '#ffd166';
+        return '#00c8ff';
+    }
 
-                        let drop = 0;
-                        if (data.length >= 120) {
-                            const twoHoursAgo = data[0].pres;
-                            drop = twoHoursAgo - latest.pres;
-                        }
-
-                        const warningActive = applyTieredWarning(drop);
-                        updateAmbientColor(latest.temp, warningActive, drop);
-
-                        const graphData = data.slice(-40);
-                        const labels = graphData.map(d => d.timestamp.split(' ')[1].substring(0, 5));
-                        const pressures = graphData.map(d => d.pres);
-                        
-                        weatherChart.data.labels = labels;
-                        weatherChart.data.datasets[0].data = pressures;
-                        weatherChart.update();
-                    }
-                });
+    // ─── TREND TAG ─────────────────────────────────────────────────────────────
+    function updateTrend(el, arrowEl, cur, prev, unit) {
+        if (prev === null) return;
+        const diff = cur - prev;
+        const abs  = Math.abs(diff).toFixed(2);
+        if (diff > 0.02) {
+            el.textContent = `↑ +${abs} ${unit}`;
+            arrowEl.style.color = '#ff8c42';
+        } else if (diff < -0.02) {
+            el.textContent = `↓ -${abs} ${unit}`;
+            arrowEl.style.color = '#00c8ff';
+        } else {
+            el.textContent = `→ STEADY`;
+            arrowEl.style.color = 'var(--text-mid)';
         }
+    }
 
-        setInterval(updateDashboard, 60000);
-        updateDashboard();
+    // ─── ANIMATE VALUE ─────────────────────────────────────────────────────────
+    function flashVal(el) {
+        el.classList.remove('value-flash');
+        void el.offsetWidth;
+        el.classList.add('value-flash');
+    }
+
+    // ─── MAIN FETCH ────────────────────────────────────────────────────────────
+    function updateDashboard() {
+        const spinner = document.getElementById('spinner');
+        const lastUpEl = document.getElementById('last-update');
+        spinner.classList.add('active');
+
+        fetch('/get_data')
+            .then(r => r.json())
+            .then(data => {
+                spinner.classList.remove('active');
+                if (!data || !data.length) return;
+
+                const latest = data[data.length - 1];
+                const presEl = document.getElementById('pres-val');
+                const tempEl = document.getElementById('temp-val');
+
+                // Update values with flash
+                presEl.textContent = latest.pres.toFixed(1);
+                flashVal(presEl);
+                tempEl.textContent = latest.temp.toFixed(1);
+                tempEl.style.color = tempColor(latest.temp);
+                flashVal(tempEl);
+
+                // Trend
+                updateTrend(
+                    document.getElementById('pres-trend-text'),
+                    document.getElementById('pres-trend'),
+                    latest.pres, prevPres, 'hPa'
+                );
+                updateTrend(
+                    document.getElementById('temp-trend-text'),
+                    document.getElementById('temp-trend'),
+                    latest.temp, prevTemp, '°C'
+                );
+                prevPres = latest.pres;
+                prevTemp = latest.temp;
+
+                // Session stats
+                const allPres = data.map(d => d.pres);
+                const sMax = Math.max(...allPres);
+                const sMin = Math.min(...allPres);
+                document.getElementById('stat-pmax').textContent = sMax.toFixed(1);
+                document.getElementById('stat-pmin').textContent = sMin.toFixed(1);
+                document.getElementById('stat-count').textContent = data.length;
+
+                // Sentry drop
+                let drop = 0;
+                if (data.length >= 120) {
+                    drop = data[0].pres - latest.pres;
+                } else if (data.length > 1) {
+                    drop = data[0].pres - latest.pres;
+                }
+                applySentry(drop);
+
+                // Chart
+                const slice = data.slice(-40);
+                weatherChart.data.labels   = slice.map(d => d.timestamp.split(' ')[1].slice(0,5));
+                weatherChart.data.datasets[0].data = slice.map(d => d.pres);
+                weatherChart.update();
+
+                // Last update
+                const ts = latest.timestamp.split(' ')[1].slice(0,5);
+                lastUpEl.textContent = `UPDATED ${ts} IST`;
+            })
+            .catch(() => {
+                spinner.classList.remove('active');
+                document.getElementById('last-update').textContent = 'FETCH ERROR';
+            });
+    }
+
+    setInterval(updateDashboard, 60000);
+    updateDashboard();
     </script>
 </body>
 </html>
