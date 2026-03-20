@@ -127,143 +127,154 @@
             please refer to the India Meteorological Department (IMD).
         </p>
         <div class="footer-credits">
-            Version • 0.0.3.1 Intelligence<br>
+            Version • 0.0.3.3 Intelligence<br>
             DIAMOND HARBOUR OBSERVATORY • 2026<br><br>
             Created by <span>Ayus Das</span> • Systems Architect
         </div>
     </div>
 
-    <script>
-            let lastPres = 0, lastTemp = 0;
-            let isFirstLoad = true; // Flag to trigger the progressive animation only on load
-            const ctx = document.getElementById('weatherChart').getContext('2d');
-            
-            // Creating a professional gradient for the area under the line
-            const chartGradient = ctx.createLinearGradient(0, 0, 0, 300);
-            chartGradient.addColorStop(0, 'rgba(0, 210, 255, 0.2)');
-            chartGradient.addColorStop(1, 'rgba(0, 210, 255, 0)');
+<script>
+        let lastPres = 0, lastTemp = 0;
+        let isFirstLoad = true;
+        const ctx = document.getElementById('weatherChart').getContext('2d');
+        
+        // Professional Grade Gradient
+        const chartGradient = ctx.createLinearGradient(0, 0, 0, 300);
+        chartGradient.addColorStop(0, 'rgba(0, 210, 255, 0.3)');
+        chartGradient.addColorStop(1, 'rgba(0, 210, 255, 0)');
 
-            const weatherChart = new Chart(ctx, {
-                type: 'line',
-                data: { 
-                    labels: [], 
-                    datasets: [{ 
-                        data: [], 
-                        borderColor: '#00d2ff', 
-                        borderWidth: 2, 
-                        fill: true, 
-                        backgroundColor: chartGradient, 
-                        tension: 0.4, 
-                        pointRadius: 0,
-                        borderCapStyle: 'round'
-                    }] 
+        const weatherChart = new Chart(ctx, {
+            type: 'line',
+            data: { 
+                labels: [], 
+                datasets: [{ 
+                    data: [], 
+                    borderColor: '#00d2ff', 
+                    borderWidth: 2.5, 
+                    fill: true, 
+                    backgroundColor: chartGradient, 
+                    tension: 0.4, 
+                    pointRadius: 0,
+                    pointHoverRadius: 5,
+                    borderCapStyle: 'round'
+                }] 
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false,
+                layout: { padding: { left: 10, right: 10, top: 10, bottom: 0 } },
+                // High-Performance Smooth Animation
+                animation: {
+                    duration: 2500,
+                    easing: 'easeOutQuart'
                 },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false,
-                    // PROFESSIONAL LEFT-TO-RIGHT ANIMATION LOGIC
-                    animation: {
-                        x: {
-                            type: 'number',
-                            easing: 'easeInOutQuart',
-                            duration: 2500,
-                            from: NaN, // This forces the "drawing" effect from left
-                            delay: (ctx) => ctx.type === 'data' && ctx.mode === 'default' && isFirstLoad ? ctx.index * 20 : 0
-                        },
-                        y: {
-                            type: 'number',
-                            easing: 'easeInOutQuart',
-                            duration: 2500,
-                            from: (ctx) => ctx.index === 0 ? ctx.chart.scales.y.getPixelForValue(1013) : ctx.chart.getDatasetMeta(0).data[ctx.index - 1].getProps(['y'], true).y,
-                            delay: (ctx) => ctx.type === 'data' && ctx.mode === 'default' && isFirstLoad ? ctx.index * 20 : 0
-                        }
+                transitions: {
+                    active: { animation: { duration: 400 } }
+                },
+                plugins: { legend: { display: false } },
+                scales: { 
+                    x: { 
+                        ticks: { color: '#555', font: { size: 9, family: 'JetBrains Mono' } }, 
+                        grid: { display: false } 
                     },
-                    plugins: { legend: { display: false } },
-                    scales: { 
-                        x: { ticks: { color: '#444', font: { size: 8 } }, grid: { display: false } },
-                        y: { 
-                            grid: { color: 'rgba(255,255,255,0.03)', drawBorder: false }, 
-                            ticks: { color: '#444', font: { size: 8 } } 
-                        } 
-                    }
+                    y: { 
+                        grid: { color: 'rgba(255,255,255,0.03)', drawBorder: false }, 
+                        ticks: { color: '#555', font: { size: 9, family: 'JetBrains Mono' } } 
+                    } 
+                }
+            }
+        });
+
+        // Value Counter Animation
+        function animateValue(id, start, end, duration) {
+            const obj = document.getElementById(id);
+            if (start === end) return;
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerText = (progress * (end - start) + start).toFixed(1);
+                if (progress < 1) window.requestAnimationFrame(step);
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        function updateDashboard() {
+            fetch('/get_data').then(res => res.json()).then(data => {
+                const latest = data.history[data.history.length - 1];
+                
+                // Status Update
+                const hbDot = document.getElementById('hb-dot');
+                hbDot.className = 'heartbeat pulse-anim';
+                hbDot.style.color = 'var(--safe-green)';
+                hbDot.style.background = 'var(--safe-green)';
+                document.getElementById('hb-text').innerText = 'STATION ONLINE';
+
+                animateValue('pres-val', lastPres || latest.pres - 2, latest.pres, 1500);
+                animateValue('temp-val', lastTemp || latest.temp - 2, latest.temp, 1500);
+                lastPres = latest.pres; lastTemp = latest.temp;
+
+                document.getElementById('max-t').innerText = data.extremes.max_temp.toFixed(1);
+                document.getElementById('min-t').innerText = data.extremes.min_temp.toFixed(1);
+                document.getElementById('max-p').innerText = data.extremes.max_pres.toFixed(1);
+                document.getElementById('min-p').innerText = data.extremes.min_pres.toFixed(1);
+
+                // Alert Logic
+                let drop = data.history[0].pres - latest.pres;
+                const box = document.getElementById('sentry-box');
+                const glowL = document.getElementById('glow-l');
+                const glowR = document.getElementById('glow-r');
+                
+                if (drop >= 3.0) {
+                    box.style.borderColor = 'var(--warn-red)';
+                    document.getElementById('sentry-text').innerText = "SEVERE STORM RISK: RED ZONE";
+                    document.getElementById('sentry-text').style.color = 'var(--warn-red)';
+                    document.getElementById('sentry-emoji').innerText = "⚡";
+                    glowL.style.background = 'var(--warn-red)';
+                    glowR.style.background = 'var(--warn-red)';
+                } else if (drop >= 1.2) {
+                    box.style.borderColor = 'var(--warn-orange)';
+                    document.getElementById('sentry-text').innerText = "UNSETTLED: CONVECTIVE TREND";
+                    document.getElementById('sentry-text').style.color = 'var(--warn-orange)';
+                    document.getElementById('sentry-emoji').innerText = "☁️";
+                    glowL.style.background = 'var(--warn-orange)';
+                    glowR.style.background = 'var(--warn-orange)';
+                } else {
+                    box.style.borderColor = 'var(--border)';
+                    document.getElementById('sentry-text').innerText = "ATMOSPHERE STABLE";
+                    document.getElementById('sentry-text').style.color = 'var(--safe-green)';
+                    document.getElementById('sentry-emoji').innerText = "😊";
+                    let tempCol = (latest.temp > 30) ? 'var(--warn-orange)' : 'var(--accent-blue)';
+                    glowL.style.background = tempCol;
+                    glowR.style.background = tempCol;
+                }
+
+                document.getElementById('temp-val').style.color = (latest.temp > 30) ? 'var(--warn-orange)' : 'var(--accent-blue)';
+
+                // Update Chart Data
+                weatherChart.data.labels = data.history.map(d => d.timestamp.split(' ')[1].substring(0,5));
+                weatherChart.data.datasets[0].data = data.history.map(d => d.pres);
+                
+                // Professional left-to-right drawing shim
+                if (isFirstLoad) {
+                    const chartEl = document.getElementById('weatherChart');
+                    chartEl.style.clipPath = 'inset(0 100% 0 0)';
+                    chartEl.style.transition = 'clip-path 3.5s cubic-bezier(0.4, 0, 0.2, 1)';
+                    
+                    weatherChart.update('none'); // Render immediately
+                    
+                    setTimeout(() => {
+                        chartEl.style.clipPath = 'inset(0 0 0 0)';
+                    }, 100);
+                    isFirstLoad = false;
+                } else {
+                    weatherChart.update(); // Smooth update for new data
                 }
             });
+        }
 
-            function animateValue(id, start, end, duration) {
-                const obj = document.getElementById(id);
-                if (start === end) return;
-                let startTimestamp = null;
-                const step = (timestamp) => {
-                    if (!startTimestamp) startTimestamp = timestamp;
-                    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                    obj.innerText = (progress * (end - start) + start).toFixed(1);
-                    if (progress < 1) window.requestAnimationFrame(step);
-                };
-                window.requestAnimationFrame(step);
-            }
-
-            function updateDashboard() {
-                fetch('/get_data').then(res => res.json()).then(data => {
-                    const latest = data.history[data.history.length - 1];
-                    
-                    const hbDot = document.getElementById('hb-dot');
-                    hbDot.className = 'heartbeat pulse-anim';
-                    hbDot.style.color = 'var(--safe-green)';
-                    hbDot.style.background = 'var(--safe-green)';
-                    document.getElementById('hb-text').innerText = 'STATION ONLINE';
-
-                    animateValue('pres-val', lastPres || latest.pres - 2, latest.pres, 1500);
-                    animateValue('temp-val', lastTemp || latest.temp - 2, latest.temp, 1500);
-                    lastPres = latest.pres; lastTemp = latest.temp;
-
-                    document.getElementById('max-t').innerText = data.extremes.max_temp.toFixed(1);
-                    document.getElementById('min-t').innerText = data.extremes.min_temp.toFixed(1);
-                    document.getElementById('max-p').innerText = data.extremes.max_pres.toFixed(1);
-                    document.getElementById('min-p').innerText = data.extremes.min_pres.toFixed(1);
-
-                    let drop = data.history[0].pres - latest.pres;
-                    const box = document.getElementById('sentry-box');
-                    const glowL = document.getElementById('glow-l');
-                    const glowR = document.getElementById('glow-r');
-                    
-                    if (drop >= 3.0) {
-                        box.style.borderColor = 'var(--warn-red)';
-                        document.getElementById('sentry-text').innerText = "SEVERE STORM RISK: RED ZONE";
-                        document.getElementById('sentry-text').style.color = 'var(--warn-red)';
-                        document.getElementById('sentry-emoji').innerText = "⚡";
-                        glowL.style.background = 'var(--warn-red)';
-                        glowR.style.background = 'var(--warn-red)';
-                    } else if (drop >= 1.2) {
-                        box.style.borderColor = 'var(--warn-orange)';
-                        document.getElementById('sentry-text').innerText = "UNSETTLED: CONVECTIVE TREND";
-                        document.getElementById('sentry-text').style.color = 'var(--warn-orange)';
-                        document.getElementById('sentry-emoji').innerText = "☁️";
-                        glowL.style.background = 'var(--warn-orange)';
-                        glowR.style.background = 'var(--warn-orange)';
-                    } else {
-                        box.style.borderColor = 'var(--border)';
-                        document.getElementById('sentry-text').innerText = "ATMOSPHERE STABLE";
-                        document.getElementById('sentry-text').style.color = 'var(--safe-green)';
-                        document.getElementById('sentry-emoji').innerText = "😊";
-                        let tempCol = (latest.temp > 30) ? 'var(--warn-orange)' : 'var(--accent-blue)';
-                        glowL.style.background = tempCol;
-                        glowR.style.background = tempCol;
-                    }
-
-                    document.getElementById('temp-val').style.color = (latest.temp > 30) ? 'var(--warn-orange)' : 'var(--accent-blue)';
-
-                    // Update Chart Data
-                    weatherChart.data.labels = data.history.map(d => d.timestamp.split(' ')[1].substring(0,5));
-                    weatherChart.data.datasets[0].data = data.history.map(d => d.pres);
-                    
-                    // Professional refresh: only do drawing animation on initial load
-                    weatherChart.update(isFirstLoad ? 'default' : 'none');
-                    isFirstLoad = false; 
-                });
-            }
-
-            setInterval(updateDashboard, 60000);
-            updateDashboard();
-        </script>
+        setInterval(updateDashboard, 60000);
+        updateDashboard();
+    </script>
 </body>
 </html>
