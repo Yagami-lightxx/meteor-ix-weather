@@ -9,28 +9,23 @@
     <style>
         :root {
             --bg: #030305;
-            --surface-1: rgba(255,255,255,0.025);
-            --surface-2: rgba(255,255,255,0.05);
-            --border-dim: rgba(255,255,255,0.06);
-            --border-glow: rgba(0, 200, 255, 0.3);
+            --surface-1: rgba(255,255,255,0.028);
+            --surface-2: rgba(255,255,255,0.055);
+            --border-dim: rgba(255,255,255,0.07);
             --blue: #00c8ff;
-            --blue-dim: rgba(0, 200, 255, 0.12);
+            --blue-dim: rgba(0,200,255,0.12);
             --orange: #ff8c42;
-            --orange-dim: rgba(255,140,66,0.12);
             --red: #ff3b5c;
-            --red-dim: rgba(255,59,92,0.12);
             --green: #00f5a0;
-            --green-dim: rgba(0,245,160,0.10);
-            --text: #f0f4f8;
-            --text-mid: #7a8898;
-            --text-dim: #3d4a56;
+            --text: #eef2f7;
+            --text-mid: #6b7a8a;
+            --text-dim: #2e3a44;
             --font-mono: 'Space Mono', monospace;
             --font-head: 'Syne', sans-serif;
             --font-body: 'DM Sans', sans-serif;
+            --r: 22px;
         }
-
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
         html { scroll-behavior: smooth; }
 
         body {
@@ -39,455 +34,427 @@
             font-family: var(--font-body);
             min-height: 100vh;
             overflow-x: hidden;
-            position: relative;
         }
 
-        /* ── NOISE TEXTURE OVERLAY ── */
+        /* NOISE */
         body::before {
             content: '';
             position: fixed; inset: 0;
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-            opacity: 0.025;
-            pointer-events: none;
-            z-index: 1000;
+            opacity: 0.028; pointer-events: none; z-index: 1000;
         }
 
-        /* ── AURORA BLOBS ── */
+        /* AURORA — larger, more visible on mobile */
         .aurora {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(120px);
-            pointer-events: none;
-            z-index: 0;
-            transition: background 2s ease, opacity 1.5s ease;
+            position: fixed; border-radius: 50%;
+            filter: blur(80px);
+            pointer-events: none; z-index: 0;
+            will-change: transform;
+            transition: background 2s ease;
         }
         .aurora-a {
-            width: 70vw; height: 70vw;
-            top: -20vh; left: -20vw;
-            background: radial-gradient(circle, rgba(0,200,255,0.18) 0%, transparent 70%);
-            animation: drift-a 18s ease-in-out infinite;
+            width: 120vw; height: 120vw;
+            max-width: 900px; max-height: 900px;
+            top: -35vw; left: -35vw;
+            background: radial-gradient(circle, rgba(0,200,255,0.25) 0%, transparent 62%);
+            animation: drift-a 20s ease-in-out infinite;
         }
         .aurora-b {
-            width: 60vw; height: 60vw;
-            bottom: -15vh; right: -15vw;
-            background: radial-gradient(circle, rgba(255,140,66,0.12) 0%, transparent 70%);
-            animation: drift-b 22s ease-in-out infinite;
+            width: 110vw; height: 110vw;
+            max-width: 820px; max-height: 820px;
+            bottom: -28vw; right: -28vw;
+            background: radial-gradient(circle, rgba(255,140,66,0.2) 0%, transparent 62%);
+            animation: drift-b 26s ease-in-out infinite;
         }
         .aurora-c {
-            width: 40vw; height: 40vw;
-            top: 40vh; left: 30vw;
-            background: radial-gradient(circle, rgba(0,245,160,0.06) 0%, transparent 70%);
-            animation: drift-a 28s ease-in-out infinite reverse;
+            width: 80vw; height: 80vw;
+            max-width: 580px; max-height: 580px;
+            top: 38vh; left: 15vw;
+            background: radial-gradient(circle, rgba(0,245,160,0.1) 0%, transparent 62%);
+            animation: drift-a 34s ease-in-out infinite reverse;
         }
-
         @keyframes drift-a {
             0%,100% { transform: translate(0,0) scale(1); }
-            33% { transform: translate(4vw,-6vh) scale(1.08); }
-            66% { transform: translate(-3vw, 5vh) scale(0.95); }
+            33%  { transform: translate(5vw,-7vh) scale(1.1); }
+            66%  { transform: translate(-4vw,6vh) scale(0.93); }
         }
         @keyframes drift-b {
             0%,100% { transform: translate(0,0) scale(1); }
-            40% { transform: translate(-5vw, 4vh) scale(1.12); }
-            70% { transform: translate(3vw,-3vh) scale(0.92); }
+            40%  { transform: translate(-6vw,5vh) scale(1.13); }
+            70%  { transform: translate(4vw,-4vh) scale(0.9); }
         }
 
-        /* ── SCAN LINE ── */
+        /* SCANLINES */
         .scanline {
             position: fixed; inset: 0;
-            background: repeating-linear-gradient(
-                to bottom,
-                transparent 0px,
-                transparent 3px,
-                rgba(0,0,0,0.07) 3px,
-                rgba(0,0,0,0.07) 4px
-            );
-            pointer-events: none;
-            z-index: 999;
+            background: repeating-linear-gradient(to bottom,
+                transparent 0px, transparent 3px,
+                rgba(0,0,0,0.05) 3px, rgba(0,0,0,0.05) 4px);
+            pointer-events: none; z-index: 999;
         }
 
-        /* ── LAYOUT ── */
+        /* SHELL */
         .shell {
-            position: relative;
-            z-index: 10;
-            max-width: 1080px;
+            position: relative; z-index: 10;
+            max-width: 1040px;
             margin: 0 auto;
-            padding: 32px 24px 64px;
-            display: flex;
-            flex-direction: column;
-            gap: 28px;
+            padding: 26px 16px 60px;
+            display: flex; flex-direction: column; gap: 18px;
         }
 
-        /* ── TOPBAR ── */
+        /* ── TOPBAR ── FIX: flex-wrap + clamp fonts so it never overlaps */
         .topbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 4px;
+            gap: 10px;
+            flex-wrap: nowrap;
+            padding: 0 2px;
         }
-        .logo-wrap { display: flex; align-items: baseline; gap: 10px; }
+        .logo-wrap {
+            display: flex; align-items: baseline;
+            gap: 6px; flex-shrink: 0;
+        }
         .logo-text {
             font-family: var(--font-head);
             font-weight: 800;
-            font-size: 1.4rem;
-            letter-spacing: 6px;
+            font-size: clamp(0.95rem, 3.8vw, 1.32rem);
+            letter-spacing: clamp(2px, 1.2vw, 5px);
             color: var(--blue);
-            text-shadow: 0 0 30px rgba(0,200,255,0.5);
+            text-shadow: 0 0 26px rgba(0,200,255,0.55);
         }
         .logo-ver {
             font-family: var(--font-mono);
-            font-size: 0.6rem;
+            font-size: clamp(0.46rem, 1.5vw, 0.56rem);
             color: var(--text-dim);
-            letter-spacing: 2px;
+            letter-spacing: 1px;
+            flex-shrink: 0;
         }
         .topbar-right {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 3px;
+            display: flex; flex-direction: column;
+            align-items: flex-end; gap: 4px;
+            flex-shrink: 1; min-width: 0;
         }
         .topbar-station {
             font-family: var(--font-mono);
-            font-size: 0.65rem;
+            font-size: clamp(0.46rem, 1.8vw, 0.6rem);
             color: var(--text-mid);
-            letter-spacing: 2px;
+            letter-spacing: clamp(0.5px, 0.5vw, 1.5px);
+            white-space: nowrap;
         }
-        .live-dot-wrap {
-            display: flex; align-items: center; gap: 6px;
-        }
+        .live-dot-wrap { display: flex; align-items: center; gap: 5px; }
         .live-dot {
-            width: 6px; height: 6px;
-            border-radius: 50%;
+            width: 6px; height: 6px; border-radius: 50%;
             background: var(--green);
             box-shadow: 0 0 8px var(--green);
             animation: blink 2s ease-in-out infinite;
         }
-        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.15} }
         .live-label {
             font-family: var(--font-mono);
-            font-size: 0.6rem;
-            color: var(--green);
-            letter-spacing: 2px;
+            font-size: clamp(0.46rem, 1.6vw, 0.56rem);
+            color: var(--green); letter-spacing: 2px;
         }
 
-        /* ── SENTRY BANNER ── */
+        /* SENTRY BANNER */
         .sentry {
             position: relative;
-            padding: 18px 24px;
-            border-radius: 20px;
+            padding: 15px 50px 15px 18px;
+            border-radius: var(--r);
             border: 1px solid var(--border-dim);
             background: var(--surface-1);
-            display: flex;
-            align-items: center;
-            gap: 16px;
+            display: flex; align-items: center; gap: 12px;
             overflow: hidden;
-            transition: background 0.8s ease, border-color 0.8s ease;
+            transition: background 0.9s ease, border-color 0.9s ease;
         }
         .sentry::before {
-            content: '';
-            position: absolute;
-            left: 0; top: 0; bottom: 0;
-            width: 3px;
+            content: ''; position: absolute;
+            left: 0; top: 0; bottom: 0; width: 3px;
             border-radius: 3px 0 0 3px;
             background: var(--green);
-            transition: background 0.8s ease;
-            box-shadow: 0 0 16px currentColor;
+            box-shadow: 0 0 12px var(--green);
+            transition: background 0.9s ease, box-shadow 0.9s ease;
         }
-        .sentry-icon { font-size: 1.8rem; flex-shrink: 0; }
-        .sentry-content { flex: 1; }
+        .sentry-icon { font-size: 1.5rem; flex-shrink: 0; line-height: 1; }
+        .sentry-content { flex: 1; min-width: 0; }
         .sentry-label {
             font-family: var(--font-mono);
-            font-size: 0.6rem;
-            color: var(--text-mid);
-            letter-spacing: 3px;
-            margin-bottom: 3px;
+            font-size: clamp(0.46rem, 1.8vw, 0.55rem);
+            color: var(--text-mid); letter-spacing: 2px; margin-bottom: 3px;
         }
         .sentry-msg {
             font-family: var(--font-head);
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--green);
-            letter-spacing: 1px;
-            transition: color 0.8s ease;
+            font-size: clamp(0.72rem, 3vw, 0.94rem);
+            font-weight: 700; color: var(--green);
+            letter-spacing: 0.5px;
+            transition: color 0.9s ease;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .sentry-drop {
             font-family: var(--font-mono);
-            font-size: 0.65rem;
-            color: var(--text-mid);
-            letter-spacing: 1px;
+            font-size: clamp(0.46rem, 1.8vw, 0.58rem);
+            color: var(--text-mid); letter-spacing: 1px; margin-top: 2px;
         }
         .sentry-pulse {
-            position: absolute; right: 20px; top: 50%;
+            position: absolute; right: 14px; top: 50%;
             transform: translateY(-50%);
-            width: 40px; height: 40px;
+            width: 32px; height: 32px; flex-shrink: 0;
         }
         .sentry-pulse circle {
-            fill: none; stroke: var(--green);
-            stroke-width: 2;
+            fill: none; stroke: var(--green); stroke-width: 1.8;
             transform-origin: center;
             animation: pulse-ring 3s ease-out infinite;
+            transition: stroke 0.9s ease;
         }
-        .sentry-pulse circle:nth-child(2) { animation-delay: 1s; }
-        @keyframes pulse-ring {
-            0% { r: 4; opacity: 0.8; }
-            100% { r: 18; opacity: 0; }
-        }
+        .sentry-pulse circle:nth-child(2) { animation-delay: 1.1s; }
+        @keyframes pulse-ring { 0%{r:3;opacity:.9} 100%{r:14;opacity:0} }
 
-        /* WARNING STATES */
-        .sentry.warn-2 { border-color: rgba(255,140,66,0.4); background: rgba(255,140,66,0.06); }
-        .sentry.warn-2::before { background: var(--orange); }
-        .sentry.warn-3 { border-color: rgba(255,59,92,0.5); background: rgba(255,59,92,0.08); }
-        .sentry.warn-3::before { background: var(--red); animation: strobe 1s ease-in-out infinite; }
-        @keyframes strobe { 0%,100%{opacity:1} 50%{opacity:0.2} }
+        .sentry.warn-2 { border-color: rgba(255,140,66,0.4); background: rgba(255,140,66,0.07); }
+        .sentry.warn-2::before { background: var(--orange); box-shadow: 0 0 12px var(--orange); }
+        .sentry.warn-3 { border-color: rgba(255,59,92,0.5); background: rgba(255,59,92,0.09); }
+        .sentry.warn-3::before { background: var(--red); box-shadow: 0 0 12px var(--red); animation: strobe 0.9s ease-in-out infinite; }
+        @keyframes strobe { 0%,100%{opacity:1} 50%{opacity:0.1} }
 
-        /* ── METRIC CARDS ── */
+        /* METRIC CARDS */
         .metrics-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            gap: 14px;
         }
-        @media(max-width:600px){ .metrics-row { grid-template-columns: 1fr; } }
+        @media(max-width:520px){ .metrics-row { grid-template-columns: 1fr; } }
 
         .card {
             background: var(--surface-1);
             border: 1px solid var(--border-dim);
-            border-radius: 24px;
-            padding: 28px;
-            position: relative;
-            overflow: hidden;
+            border-radius: var(--r);
+            padding: 20px 18px 18px;
+            position: relative; overflow: hidden;
             transition: border-color 0.5s ease;
         }
+        /* corner glow */
         .card::after {
-            content: '';
-            position: absolute;
-            inset: 0;
+            content: ''; position: absolute; inset: 0;
             border-radius: inherit;
-            background: radial-gradient(ellipse at 30% 0%, var(--accent-splash, rgba(0,200,255,0.05)) 0%, transparent 60%);
+            background: radial-gradient(ellipse at 25% 10%, var(--cg, rgba(0,200,255,0.07)) 0%, transparent 55%);
             pointer-events: none;
         }
-        .card-pressure { --accent-splash: rgba(0,200,255,0.07); }
-        .card-temp { --accent-splash: rgba(255,140,66,0.07); }
+        .card-pressure { --cg: rgba(0,200,255,0.09); }
+        .card-temp     { --cg: rgba(255,140,66,0.09); }
+
+        /* shimmer sweep */
+        .card::before {
+            content: ''; position: absolute;
+            top: 0; left: -100%; bottom: 0; width: 55%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.045), transparent);
+            pointer-events: none; z-index: 2;
+        }
+        .card.shimmer::before { animation: shimmer-sweep 0.6s ease forwards; }
+        @keyframes shimmer-sweep { to { left: 160%; } }
+
+        /* card outer glow pop */
+        @keyframes cardPop {
+            0%   { box-shadow: 0 0 0 0 var(--pc, rgba(0,200,255,0)); }
+            35%  { box-shadow: 0 0 0 7px var(--pc, rgba(0,200,255,0.14)); }
+            100% { box-shadow: 0 0 0 0 var(--pc, rgba(0,200,255,0)); }
+        }
+        .card-pressure.pop { --pc: rgba(0,200,255,0.2); animation: cardPop 0.75s ease forwards; }
+        .card-temp.pop     { --pc: rgba(255,140,66,0.2); animation: cardPop 0.75s ease forwards; }
 
         .card-label {
             font-family: var(--font-mono);
-            font-size: 0.6rem;
-            letter-spacing: 3px;
-            color: var(--text-dim);
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            font-size: 0.54rem; letter-spacing: 3px;
+            color: var(--text-dim); margin-bottom: 12px;
+            display: flex; align-items: center; gap: 7px;
         }
         .card-label::before {
-            content: '';
-            display: inline-block;
-            width: 20px; height: 1px;
-            background: currentColor;
+            content: ''; display: inline-block;
+            width: 14px; height: 1px; background: currentColor;
         }
 
+        /* ── METRIC VALUE: clean mono, not giant ── */
         .metric-value {
-            font-family: var(--font-head);
-            font-size: 3.8rem;
-            font-weight: 800;
-            line-height: 1;
+            font-family: var(--font-mono);
+            font-size: clamp(1.8rem, 7vw, 2.6rem);
+            font-weight: 700; line-height: 1;
             color: var(--text);
-            transition: color 1s ease;
-            letter-spacing: -2px;
+            letter-spacing: -1px;
+            transition: color 1.2s ease;
         }
         .metric-unit {
             font-family: var(--font-mono);
-            font-size: 0.75rem;
-            color: var(--text-mid);
-            letter-spacing: 2px;
-            margin-top: 8px;
+            font-size: 0.55rem; color: var(--text-mid);
+            letter-spacing: 2px; margin-top: 6px;
         }
-
-        .card-bar {
-            position: absolute;
-            bottom: 0; left: 0; right: 0;
-            height: 2px;
-            background: linear-gradient(to right, transparent, var(--bar-color, rgba(0,200,255,0.5)), transparent);
-        }
-        .card-pressure .card-bar { --bar-color: var(--blue); }
-        .card-temp .card-bar { --bar-color: var(--orange); }
-
-        /* Trend indicator */
         .trend-tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
+            display: inline-flex; align-items: center; gap: 5px;
             font-family: var(--font-mono);
-            font-size: 0.6rem;
-            padding: 4px 8px;
-            border-radius: 20px;
-            margin-top: 12px;
-            letter-spacing: 1px;
+            font-size: 0.54rem; padding: 4px 9px;
+            border-radius: 20px; margin-top: 11px;
+            letter-spacing: 0.5px;
             background: var(--surface-2);
             color: var(--text-mid);
-            transition: all 0.5s ease;
+            transition: color 0.4s ease, background 0.4s ease;
         }
-        .trend-arrow { font-size: 0.65rem; }
+        .card-bar {
+            position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(to right, transparent, var(--bc, rgba(0,200,255,0.45)), transparent);
+        }
+        .card-pressure .card-bar { --bc: rgba(0,200,255,0.5); }
+        .card-temp     .card-bar { --bc: rgba(255,140,66,0.5); }
 
-        /* ── CHART SECTION ── */
+        /* number animation */
+        @keyframes countUp {
+            0%   { opacity: 0; transform: translateY(9px) scale(0.97); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .num-animate { animation: countUp 0.4s cubic-bezier(0.22,1,0.36,1) forwards; }
+
+        /* CHART */
         .chart-section {
             background: var(--surface-1);
             border: 1px solid var(--border-dim);
-            border-radius: 24px;
-            padding: 28px;
-            position: relative;
-            overflow: hidden;
+            border-radius: var(--r);
+            padding: 20px 18px 16px;
+            position: relative; overflow: hidden;
         }
         .chart-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 16px; flex-wrap: wrap; gap: 8px;
         }
         .chart-title {
             font-family: var(--font-head);
-            font-weight: 700;
-            font-size: 0.9rem;
-            letter-spacing: 2px;
-            color: var(--text-mid);
-            text-transform: uppercase;
+            font-weight: 700; font-size: 0.8rem;
+            letter-spacing: 2px; color: var(--text-mid); text-transform: uppercase;
         }
-        .chart-badge {
-            font-family: var(--font-mono);
-            font-size: 0.58rem;
-            padding: 4px 10px;
-            border-radius: 20px;
-            background: var(--blue-dim);
-            color: var(--blue);
-            border: 1px solid rgba(0,200,255,0.2);
-            letter-spacing: 1px;
+        .chart-badges { display: flex; gap: 7px; flex-wrap: wrap; }
+        .badge {
+            font-family: var(--font-mono); font-size: 0.52rem;
+            padding: 3px 8px; border-radius: 20px;
+            background: var(--blue-dim); color: var(--blue);
+            border: 1px solid rgba(0,200,255,0.2); letter-spacing: 1px;
         }
-        .chart-wrap { height: 260px; }
+        .chart-wrap { height: 220px; position: relative; }
 
-        /* ── STATUS ROW ── */
+        /* new point flash */
+        .chart-dot {
+            position: absolute; width: 8px; height: 8px; border-radius: 50%;
+            background: var(--blue); box-shadow: 0 0 10px var(--blue);
+            pointer-events: none; display: none;
+        }
+        @keyframes dotFlash { 0%{opacity:0} 25%{opacity:1} 100%{opacity:0;transform:scale(2.5)} }
+        .chart-dot.active { display: block; animation: dotFlash 1s ease forwards; }
+
+        /* chart reveal on first load */
+        @keyframes chartReveal {
+            0%   { clip-path: inset(0 100% 0 0); }
+            100% { clip-path: inset(0 0% 0 0); }
+        }
+        .chart-reveal { animation: chartReveal 1.1s cubic-bezier(0.22,1,0.36,1) 0.7s both; }
+
+        /* STATS */
         .status-row {
-            display: grid;
-            grid-template-columns: repeat(3,1fr);
-            gap: 14px;
+            display: grid; grid-template-columns: repeat(3,1fr); gap: 11px;
         }
-        @media(max-width:600px){ .status-row { grid-template-columns: 1fr; } }
-
+        @media(max-width:460px){ .status-row { grid-template-columns: 1fr 1fr; } }
         .stat-box {
-            background: var(--surface-1);
-            border: 1px solid var(--border-dim);
-            border-radius: 16px;
-            padding: 18px;
-            text-align: center;
+            background: var(--surface-1); border: 1px solid var(--border-dim);
+            border-radius: 16px; padding: 14px 10px; text-align: center;
         }
         .stat-box-label {
-            font-family: var(--font-mono);
-            font-size: 0.55rem;
-            color: var(--text-dim);
-            letter-spacing: 2px;
-            margin-bottom: 10px;
-            text-transform: uppercase;
+            font-family: var(--font-mono); font-size: 0.5rem;
+            color: var(--text-dim); letter-spacing: 1.5px;
+            margin-bottom: 7px; text-transform: uppercase;
         }
         .stat-box-val {
-            font-family: var(--font-head);
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text);
+            font-family: var(--font-mono);
+            font-size: clamp(1rem, 3.5vw, 1.35rem);
+            font-weight: 700; color: var(--text);
         }
         .stat-box-sub {
-            font-family: var(--font-mono);
-            font-size: 0.55rem;
-            color: var(--text-mid);
-            margin-top: 4px;
-            letter-spacing: 1px;
+            font-family: var(--font-mono); font-size: 0.48rem;
+            color: var(--text-mid); margin-top: 3px; letter-spacing: 1px;
         }
 
-        /* ── TIMESTAMP BAR ── */
+        /* FETCH HEALTH */
+        .health-bar {
+            background: var(--surface-1); border: 1px solid var(--border-dim);
+            border-radius: 14px; padding: 13px 16px;
+            display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+        }
+        .health-label {
+            font-family: var(--font-mono); font-size: 0.54rem;
+            color: var(--text-mid); letter-spacing: 2px; flex-shrink: 0;
+        }
+        .health-track {
+            flex: 1; min-width: 80px; height: 3px;
+            border-radius: 3px; background: var(--border-dim); overflow: hidden;
+        }
+        .health-fill {
+            height: 100%; border-radius: 3px;
+            background: linear-gradient(to right, var(--blue), var(--green));
+            width: 0%; transition: width 1s ease;
+        }
+        .health-pct {
+            font-family: var(--font-mono); font-size: 0.54rem;
+            color: var(--blue); letter-spacing: 1px; flex-shrink: 0;
+        }
+
+        /* TIME BAR */
         .time-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 4px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 2px; flex-wrap: wrap; gap: 8px;
         }
         .time-now {
-            font-family: var(--font-mono);
-            font-size: 0.65rem;
-            color: var(--text-dim);
-            letter-spacing: 2px;
+            font-family: var(--font-mono); font-size: 0.58rem;
+            color: var(--text-dim); letter-spacing: 2px;
         }
         .time-update {
-            display: flex; align-items: center; gap: 8px;
-            font-family: var(--font-mono);
-            font-size: 0.6rem;
-            color: var(--text-dim);
+            display: flex; align-items: center; gap: 7px;
+            font-family: var(--font-mono); font-size: 0.55rem; color: var(--text-dim);
         }
         .spinner {
-            width: 12px; height: 12px;
-            border: 1.5px solid var(--text-dim);
-            border-top-color: var(--blue);
-            border-radius: 50%;
-            animation: spin 1.2s linear infinite;
-            opacity: 0;
-            transition: opacity 0.3s;
+            width: 11px; height: 11px;
+            border: 1.5px solid var(--text-dim); border-top-color: var(--blue);
+            border-radius: 50%; animation: spin 1s linear infinite;
+            opacity: 0; transition: opacity 0.3s;
         }
         .spinner.active { opacity: 1; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* ── FOOTER ── */
+        /* FOOTER */
         .footer {
-            text-align: center;
-            padding-top: 20px;
+            text-align: center; padding-top: 16px;
             border-top: 1px solid var(--border-dim);
         }
         .footer-disclaimer {
-            font-family: var(--font-body);
-            font-size: 0.7rem;
-            color: var(--text-dim);
-            line-height: 1.7;
-            max-width: 600px;
-            margin: 0 auto 16px;
-            font-style: italic;
+            font-size: 0.64rem; color: var(--text-dim);
+            line-height: 1.75; max-width: 560px;
+            margin: 0 auto 12px; font-style: italic;
         }
         .footer-credit {
-            font-family: var(--font-mono);
-            font-size: 0.6rem;
-            color: var(--text-dim);
-            letter-spacing: 2px;
+            font-family: var(--font-mono); font-size: 0.54rem;
+            color: var(--text-dim); letter-spacing: 1.5px;
         }
-        .footer-credit span {
-            color: var(--blue);
-            text-shadow: 0 0 12px rgba(0,200,255,0.4);
-        }
+        .footer-credit span { color: var(--blue); text-shadow: 0 0 10px rgba(0,200,255,0.4); }
 
-        /* ── ENTRY ANIMATION ── */
+        /* ENTRY ANIMATIONS */
         .fade-in {
-            opacity: 0;
-            transform: translateY(18px);
-            animation: fadeUp 0.7s ease forwards;
+            opacity: 0; transform: translateY(14px);
+            animation: fadeUp 0.6s cubic-bezier(0.22,1,0.36,1) forwards;
         }
-        @keyframes fadeUp {
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .fade-in:nth-child(1) { animation-delay: 0.1s; }
-        .fade-in:nth-child(2) { animation-delay: 0.2s; }
-        .fade-in:nth-child(3) { animation-delay: 0.3s; }
-        .fade-in:nth-child(4) { animation-delay: 0.4s; }
-        .fade-in:nth-child(5) { animation-delay: 0.5s; }
-        .fade-in:nth-child(6) { animation-delay: 0.6s; }
-        .fade-in:nth-child(7) { animation-delay: 0.7s; }
-
-        /* value flip animation */
-        @keyframes valueFlip {
-            0% { transform: translateY(-8px); opacity: 0; }
-            100% { transform: translateY(0); opacity: 1; }
-        }
-        .value-flash { animation: valueFlip 0.4s ease forwards; }
-
-        /* GLOW card hover */
-        .card:hover {
-            border-color: rgba(255,255,255,0.1);
-        }
+        @keyframes fadeUp { to { opacity:1; transform:translateY(0); } }
+        .shell > *:nth-child(1){animation-delay:.05s}
+        .shell > *:nth-child(2){animation-delay:.14s}
+        .shell > *:nth-child(3){animation-delay:.23s}
+        .shell > *:nth-child(4){animation-delay:.32s}
+        .shell > *:nth-child(5){animation-delay:.41s}
+        .shell > *:nth-child(6){animation-delay:.50s}
+        .shell > *:nth-child(7){animation-delay:.59s}
+        .shell > *:nth-child(8){animation-delay:.68s}
+        .shell > *:nth-child(9){animation-delay:.77s}
     </style>
 </head>
 <body>
-
     <div class="aurora aurora-a" id="aurora-a"></div>
     <div class="aurora aurora-b" id="aurora-b"></div>
     <div class="aurora aurora-c"></div>
@@ -499,7 +466,7 @@
         <div class="topbar fade-in">
             <div class="logo-wrap">
                 <div class="logo-text">METEOR-IX</div>
-                <div class="logo-ver">v0.0.2.1</div>
+                <div class="logo-ver">v0.0.4.0</div>
             </div>
             <div class="topbar-right">
                 <div class="topbar-station">DIAMOND HARBOUR · IST</div>
@@ -510,7 +477,7 @@
             </div>
         </div>
 
-        <!-- SENTRY BANNER -->
+        <!-- SENTRY -->
         <div class="sentry fade-in" id="sentry">
             <div class="sentry-icon" id="sentry-icon">😊</div>
             <div class="sentry-content">
@@ -518,35 +485,26 @@
                 <div class="sentry-msg" id="sentry-msg">STABLE — NO WARNINGS ACTIVE</div>
                 <div class="sentry-drop" id="sentry-drop">2HR ΔPRES: — hPa</div>
             </div>
-            <svg class="sentry-pulse" id="sentry-pulse" viewBox="0 0 40 40">
-                <circle cx="20" cy="20" r="4"/>
-                <circle cx="20" cy="20" r="4"/>
+            <svg class="sentry-pulse" id="sentry-pulse" viewBox="0 0 32 32">
+                <circle cx="16" cy="16" r="3"/>
+                <circle cx="16" cy="16" r="3"/>
             </svg>
         </div>
 
-        <!-- METRICS ROW -->
+        <!-- METRIC CARDS -->
         <div class="metrics-row fade-in">
-            <!-- PRESSURE -->
-            <div class="card card-pressure">
+            <div class="card card-pressure" id="card-pres">
                 <div class="card-label">PRESSURE</div>
                 <div class="metric-value" id="pres-val">—</div>
-                <div class="metric-unit">hPa  ·  BAROMETRIC</div>
-                <div class="trend-tag" id="pres-trend">
-                    <span class="trend-arrow">—</span>
-                    <span id="pres-trend-text">AWAITING DATA</span>
-                </div>
+                <div class="metric-unit">hPa · BAROMETRIC</div>
+                <div class="trend-tag" id="pres-trend">— AWAITING DATA</div>
                 <div class="card-bar"></div>
             </div>
-
-            <!-- TEMPERATURE -->
-            <div class="card card-temp">
+            <div class="card card-temp" id="card-temp">
                 <div class="card-label">TEMPERATURE</div>
                 <div class="metric-value" id="temp-val">—</div>
-                <div class="metric-unit">°C  ·  AMBIENT</div>
-                <div class="trend-tag" id="temp-trend">
-                    <span class="trend-arrow">—</span>
-                    <span id="temp-trend-text">AWAITING DATA</span>
-                </div>
+                <div class="metric-unit">°C · AMBIENT</div>
+                <div class="trend-tag" id="temp-trend">— AWAITING DATA</div>
                 <div class="card-bar"></div>
             </div>
         </div>
@@ -555,30 +513,41 @@
         <div class="chart-section fade-in">
             <div class="chart-header">
                 <div class="chart-title">Pressure History</div>
-                <div class="chart-badge">LAST 40 READINGS</div>
+                <div class="chart-badges">
+                    <div class="badge">LAST 40 READINGS</div>
+                    <div class="badge" id="range-badge">— hPa RANGE</div>
+                </div>
             </div>
             <div class="chart-wrap">
-                <canvas id="weatherChart"></canvas>
+                <canvas id="weatherChart" class="chart-reveal"></canvas>
+                <div class="chart-dot" id="chart-dot"></div>
             </div>
         </div>
 
-        <!-- STATS ROW -->
+        <!-- STATS -->
         <div class="status-row fade-in">
             <div class="stat-box">
-                <div class="stat-box-label">Session Max Pres</div>
+                <div class="stat-box-label">Session High</div>
                 <div class="stat-box-val" id="stat-pmax">—</div>
                 <div class="stat-box-sub">hPa</div>
             </div>
             <div class="stat-box">
-                <div class="stat-box-label">Session Min Pres</div>
+                <div class="stat-box-label">Session Low</div>
                 <div class="stat-box-val" id="stat-pmin">—</div>
                 <div class="stat-box-sub">hPa</div>
             </div>
             <div class="stat-box">
-                <div class="stat-box-label">Data Points</div>
+                <div class="stat-box-label">Readings</div>
                 <div class="stat-box-val" id="stat-count">—</div>
-                <div class="stat-box-sub">RECORDED</div>
+                <div class="stat-box-sub">LOGGED</div>
             </div>
+        </div>
+
+        <!-- FETCH HEALTH -->
+        <div class="health-bar fade-in">
+            <div class="health-label">FETCH HEALTH</div>
+            <div class="health-track"><div class="health-fill" id="health-fill"></div></div>
+            <div class="health-pct" id="health-pct">—%</div>
         </div>
 
         <!-- TIME BAR -->
@@ -593,9 +562,9 @@
         <!-- FOOTER -->
         <div class="footer fade-in">
             <div class="footer-disclaimer">
-                DATA ADVISORY: METEOR-IX uses localised barometric pressure trends for experimental analysis.
-                These automated alerts are not official life-safety warnings. For emergency protocols,
-                please refer to the India Meteorological Department (IMD).
+                DATA ADVISORY: METEOR-IX uses localised barometric pressure trends for experimental
+                analysis. These automated alerts are not official life-safety warnings. For emergency
+                protocols, please refer to the India Meteorological Department (IMD).
             </div>
             <div class="footer-credit">
                 DIAMOND HARBOUR OBSERVATORY · 2026 &nbsp;·&nbsp;
@@ -603,15 +572,16 @@
             </div>
         </div>
 
-    </div><!-- /shell -->
+    </div>
 
     <script>
-    // ─── CHART SETUP ───────────────────────────────────────────────────────────
-    const ctx = document.getElementById('weatherChart').getContext('2d');
-
-    const gradFill = ctx.createLinearGradient(0, 0, 0, 260);
-    gradFill.addColorStop(0, 'rgba(0,200,255,0.18)');
-    gradFill.addColorStop(1, 'rgba(0,200,255,0)');
+    // ── CHART SETUP ─────────────────────────────────────────────────────────────
+    const cvs = document.getElementById('weatherChart');
+    const ctx = cvs.getContext('2d');
+    const grad = ctx.createLinearGradient(0,0,0,220);
+    grad.addColorStop(0,   'rgba(0,200,255,0.22)');
+    grad.addColorStop(0.6, 'rgba(0,200,255,0.04)');
+    grad.addColorStop(1,   'rgba(0,200,255,0)');
 
     const weatherChart = new Chart(ctx, {
         type: 'line',
@@ -619,92 +589,91 @@
             labels: [],
             datasets: [{
                 data: [],
-                borderColor: 'rgba(0,200,255,0.85)',
-                borderWidth: 1.8,
+                borderColor: 'rgba(0,200,255,0.9)',
+                borderWidth: 1.6,
                 pointRadius: 0,
-                pointHitRadius: 10,
+                pointHitRadius: 14,
                 fill: true,
-                backgroundColor: gradFill,
-                tension: 0.45
+                backgroundColor: grad,
+                tension: 0.42
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            animation: { duration: 800, easing: 'easeInOutQuart' },
+            animation: {
+                duration: 950,
+                easing: 'easeInOutCubic',
+                onComplete() { flashDot(); }
+            },
             plugins: {
                 legend: { display: false },
                 tooltip: {
-                    backgroundColor: 'rgba(5,5,10,0.9)',
-                    borderColor: 'rgba(0,200,255,0.3)',
+                    backgroundColor: 'rgba(3,3,8,0.92)',
+                    borderColor: 'rgba(0,200,255,0.22)',
                     borderWidth: 1,
-                    titleFont: { family: "'Space Mono'", size: 10 },
-                    bodyFont: { family: "'Space Mono'", size: 11 },
-                    titleColor: '#7a8898',
-                    bodyColor: '#00c8ff',
+                    titleFont: { family:"'Space Mono'", size:9 },
+                    bodyFont:  { family:"'Space Mono'", size:10 },
+                    titleColor: '#6b7a8a',
+                    bodyColor:  '#00c8ff',
                     padding: 10,
-                    callbacks: {
-                        label: ctx => `${ctx.parsed.y.toFixed(1)} hPa`
-                    }
+                    callbacks: { label: c => `${c.parsed.y.toFixed(1)} hPa` }
                 }
             },
             scales: {
                 x: {
                     grid: { display: false },
                     border: { display: false },
-                    ticks: {
-                        color: '#3d4a56',
-                        font: { size: 9, family: "'Space Mono'" },
-                        maxRotation: 0,
-                        autoSkip: true,
-                        maxTicksLimit: 6
-                    }
+                    ticks: { color:'#2e3a44', font:{ size:8, family:"'Space Mono'" }, maxRotation:0, autoSkip:true, maxTicksLimit:5 }
                 },
                 y: {
-                    grid: {
-                        color: 'rgba(255,255,255,0.03)',
-                        drawBorder: false
-                    },
-                    border: { display: false, dash: [4,4] },
-                    ticks: {
-                        color: '#3d4a56',
-                        font: { size: 9, family: "'Space Mono'" },
-                        callback: v => v.toFixed(0)
-                    }
+                    grid: { color:'rgba(255,255,255,0.03)' },
+                    border: { display: false },
+                    ticks: { color:'#2e3a44', font:{ size:8, family:"'Space Mono'" }, callback: v=>v.toFixed(0) }
                 }
             }
         }
     });
 
-    // ─── STATE ─────────────────────────────────────────────────────────────────
-    let sessionMax = null, sessionMin = null;
-    let prevPres = null, prevTemp = null;
-
-    // ─── CLOCK ─────────────────────────────────────────────────────────────────
-    function tickClock() {
-        const now = new Date();
-        const ist = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
-        const pad = n => String(n).padStart(2,'0');
-        document.getElementById('time-now').textContent =
-            `IST ${pad(ist.getHours())}:${pad(ist.getMinutes())}:${pad(ist.getSeconds())}`;
+    // Flash a dot on the newest data point after chart animates
+    function flashDot() {
+        const meta = weatherChart.getDatasetMeta(0);
+        if (!meta?.data?.length) return;
+        const last = meta.data[meta.data.length - 1];
+        if (!last) return;
+        const dot = document.getElementById('chart-dot');
+        dot.style.left = (last.x - 4) + 'px';
+        dot.style.top  = (last.y - 4) + 'px';
+        dot.classList.remove('active');
+        void dot.offsetWidth;
+        dot.classList.add('active');
+        setTimeout(() => dot.classList.remove('active'), 1100);
     }
-    setInterval(tickClock, 1000);
-    tickClock();
 
-    // ─── SENTRY ────────────────────────────────────────────────────────────────
+    // ── STATE ────────────────────────────────────────────────────────────────────
+    let prevPres = null, prevTemp = null;
+    let fetchTotal = 0, fetchOk = 0, firstLoad = true;
+
+    // ── CLOCK ────────────────────────────────────────────────────────────────────
+    (function tickClock() {
+        const ist = new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Kolkata'}));
+        const p = n => String(n).padStart(2,'0');
+        document.getElementById('time-now').textContent =
+            `IST  ${p(ist.getHours())}:${p(ist.getMinutes())}:${p(ist.getSeconds())}`;
+        setTimeout(tickClock, 1000);
+    })();
+
+    // ── SENTRY ───────────────────────────────────────────────────────────────────
     function applySentry(drop) {
-        const box      = document.getElementById('sentry');
-        const icon     = document.getElementById('sentry-icon');
-        const msg      = document.getElementById('sentry-msg');
-        const dropEl   = document.getElementById('sentry-drop');
-        const aA       = document.getElementById('aurora-a');
-        const aB       = document.getElementById('aurora-b');
-        const pulseCircles = document.querySelectorAll('#sentry-pulse circle');
+        const box  = document.getElementById('sentry');
+        const icon = document.getElementById('sentry-icon');
+        const msg  = document.getElementById('sentry-msg');
+        const dEl  = document.getElementById('sentry-drop');
+        const aA   = document.getElementById('aurora-a');
+        const aB   = document.getElementById('aurora-b');
+        const pcs  = document.querySelectorAll('#sentry-pulse circle');
 
-        const dropSign = drop >= 0 ? '-' : '+';
-        const dropAbs  = Math.abs(drop).toFixed(2);
-        dropEl.textContent = `2HR ΔPRES: ${dropSign}${dropAbs} hPa`;
-
+        dEl.textContent = `2HR ΔPRES: ${drop>=0?'−':'+'}${Math.abs(drop).toFixed(2)} hPa`;
         box.className = 'sentry';
 
         if (drop >= 2.5) {
@@ -712,130 +681,114 @@
             icon.textContent = '⚠️';
             msg.textContent  = 'CRITICAL — RAPID PRESSURE DROP';
             msg.style.color  = 'var(--red)';
-            pulseCircles.forEach(c => c.style.stroke = 'var(--red)');
-            aA.style.background = 'radial-gradient(circle, rgba(255,59,92,0.25) 0%, transparent 70%)';
-            aB.style.background = 'radial-gradient(circle, rgba(255,59,92,0.18) 0%, transparent 70%)';
-            return true;
+            pcs.forEach(c=>c.style.stroke='var(--red)');
+            aA.style.background='radial-gradient(circle,rgba(255,59,92,.3) 0%,transparent 62%)';
+            aB.style.background='radial-gradient(circle,rgba(255,59,92,.22) 0%,transparent 62%)';
         } else if (drop >= 1.2) {
             box.classList.add('warn-2');
             icon.textContent = '☁️';
             msg.textContent  = 'UNSETTLED — MODERATE PRESSURE DROP';
             msg.style.color  = 'var(--orange)';
-            pulseCircles.forEach(c => c.style.stroke = 'var(--orange)');
-            aA.style.background = 'radial-gradient(circle, rgba(255,140,66,0.22) 0%, transparent 70%)';
-            aB.style.background = 'radial-gradient(circle, rgba(255,140,66,0.15) 0%, transparent 70%)';
-            return true;
+            pcs.forEach(c=>c.style.stroke='var(--orange)');
+            aA.style.background='radial-gradient(circle,rgba(255,140,66,.28) 0%,transparent 62%)';
+            aB.style.background='radial-gradient(circle,rgba(255,140,66,.2) 0%,transparent 62%)';
         } else {
             icon.textContent = '😊';
             msg.textContent  = 'STABLE — NO WARNINGS ACTIVE';
             msg.style.color  = 'var(--green)';
-            pulseCircles.forEach(c => c.style.stroke = 'var(--green)');
-            aA.style.background = 'radial-gradient(circle, rgba(0,200,255,0.18) 0%, transparent 70%)';
-            aB.style.background = 'radial-gradient(circle, rgba(255,140,66,0.12) 0%, transparent 70%)';
-            return false;
+            pcs.forEach(c=>c.style.stroke='var(--green)');
+            aA.style.background='radial-gradient(circle,rgba(0,200,255,.25) 0%,transparent 62%)';
+            aB.style.background='radial-gradient(circle,rgba(255,140,66,.2) 0%,transparent 62%)';
         }
     }
 
-    // ─── TEMP COLOR ────────────────────────────────────────────────────────────
-    function tempColor(t) {
-        if (t >= 40) return '#ff1a1a';
-        if (t >= 35) return '#ff5533';
-        if (t >= 30) return '#ff8c42';
-        if (t >= 23) return '#ffd166';
-        return '#00c8ff';
-    }
+    // ── TEMP COLOR ───────────────────────────────────────────────────────────────
+    const tempColor = t =>
+        t>=40?'#ff2244':t>=35?'#ff5533':t>=30?'#ff8c42':t>=23?'#ffd166':'#00c8ff';
 
-    // ─── TREND TAG ─────────────────────────────────────────────────────────────
-    function updateTrend(el, arrowEl, cur, prev, unit) {
-        if (prev === null) return;
-        const diff = cur - prev;
-        const abs  = Math.abs(diff).toFixed(2);
-        if (diff > 0.02) {
-            el.textContent = `↑ +${abs} ${unit}`;
-            arrowEl.style.color = '#ff8c42';
-        } else if (diff < -0.02) {
-            el.textContent = `↓ -${abs} ${unit}`;
-            arrowEl.style.color = '#00c8ff';
+    // ── TREND ────────────────────────────────────────────────────────────────────
+    function setTrend(el, cur, prev, unit) {
+        if (prev===null) return;
+        const d = cur-prev, abs=Math.abs(d).toFixed(2);
+        if (d > 0.015) {
+            el.textContent=`↑ +${abs} ${unit}`; el.style.color='#ff8c42'; el.style.background='rgba(255,140,66,.1)';
+        } else if (d < -0.015) {
+            el.textContent=`↓ −${abs} ${unit}`; el.style.color='#00c8ff'; el.style.background='rgba(0,200,255,.1)';
         } else {
-            el.textContent = `→ STEADY`;
-            arrowEl.style.color = 'var(--text-mid)';
+            el.textContent='→ STEADY'; el.style.color='var(--text-mid)'; el.style.background='var(--surface-2)';
         }
     }
 
-    // ─── ANIMATE VALUE ─────────────────────────────────────────────────────────
-    function flashVal(el) {
-        el.classList.remove('value-flash');
-        void el.offsetWidth;
-        el.classList.add('value-flash');
+    // ── CARD POP ─────────────────────────────────────────────────────────────────
+    function popCard(id) {
+        const el=document.getElementById(id);
+        el.classList.remove('pop','shimmer'); void el.offsetWidth;
+        el.classList.add('pop','shimmer');
+        setTimeout(()=>el.classList.remove('shimmer'),650);
     }
 
-    // ─── MAIN FETCH ────────────────────────────────────────────────────────────
+    // ── ANIMATE NUMBER ────────────────────────────────────────────────────────────
+    function setNum(el, val) {
+        el.classList.remove('num-animate'); void el.offsetWidth;
+        el.textContent = val;
+        el.classList.add('num-animate');
+    }
+
+    // ── HEALTH BAR ────────────────────────────────────────────────────────────────
+    function updateHealth() {
+        if (!fetchTotal) return;
+        const pct = Math.round(fetchOk/fetchTotal*100);
+        document.getElementById('health-fill').style.width = pct+'%';
+        document.getElementById('health-pct').textContent  = pct+'%';
+    }
+
+    // ── MAIN UPDATE ───────────────────────────────────────────────────────────────
     function updateDashboard() {
-        const spinner = document.getElementById('spinner');
-        const lastUpEl = document.getElementById('last-update');
-        spinner.classList.add('active');
+        const spin   = document.getElementById('spinner');
+        const lupEl  = document.getElementById('last-update');
+        spin.classList.add('active');
+        fetchTotal++;
 
         fetch('/get_data')
-            .then(r => r.json())
+            .then(r=>r.json())
             .then(data => {
-                spinner.classList.remove('active');
-                if (!data || !data.length) return;
+                fetchOk++; spin.classList.remove('active'); updateHealth();
+                if (!data?.length) return;
 
-                const latest = data[data.length - 1];
-                const presEl = document.getElementById('pres-val');
-                const tempEl = document.getElementById('temp-val');
+                const latest = data[data.length-1];
 
-                // Update values with flash
-                presEl.textContent = latest.pres.toFixed(1);
-                flashVal(presEl);
-                tempEl.textContent = latest.temp.toFixed(1);
-                tempEl.style.color = tempColor(latest.temp);
-                flashVal(tempEl);
+                setNum(document.getElementById('pres-val'), latest.pres.toFixed(1));
+                if (!firstLoad) popCard('card-pres');
 
-                // Trend
-                updateTrend(
-                    document.getElementById('pres-trend-text'),
-                    document.getElementById('pres-trend'),
-                    latest.pres, prevPres, 'hPa'
-                );
-                updateTrend(
-                    document.getElementById('temp-trend-text'),
-                    document.getElementById('temp-trend'),
-                    latest.temp, prevTemp, '°C'
-                );
-                prevPres = latest.pres;
-                prevTemp = latest.temp;
+                const tEl = document.getElementById('temp-val');
+                setNum(tEl, latest.temp.toFixed(1));
+                tEl.style.color = tempColor(latest.temp);
+                if (!firstLoad) popCard('card-temp');
 
-                // Session stats
-                const allPres = data.map(d => d.pres);
-                const sMax = Math.max(...allPres);
-                const sMin = Math.min(...allPres);
-                document.getElementById('stat-pmax').textContent = sMax.toFixed(1);
-                document.getElementById('stat-pmin').textContent = sMin.toFixed(1);
+                setTrend(document.getElementById('pres-trend'), latest.pres, prevPres, 'hPa');
+                setTrend(document.getElementById('temp-trend'), latest.temp, prevTemp, '°C');
+                prevPres = latest.pres; prevTemp = latest.temp;
+
+                const ps = data.map(d=>d.pres);
+                const hi=Math.max(...ps), lo=Math.min(...ps);
+                document.getElementById('stat-pmax').textContent  = hi.toFixed(1);
+                document.getElementById('stat-pmin').textContent  = lo.toFixed(1);
                 document.getElementById('stat-count').textContent = data.length;
+                document.getElementById('range-badge').textContent = `${(hi-lo).toFixed(1)} hPa RANGE`;
 
-                // Sentry drop
-                let drop = 0;
-                if (data.length >= 120) {
-                    drop = data[0].pres - latest.pres;
-                } else if (data.length > 1) {
-                    drop = data[0].pres - latest.pres;
-                }
-                applySentry(drop);
+                applySentry(data.length>1 ? data[0].pres-latest.pres : 0);
 
-                // Chart
-                const slice = data.slice(-40);
-                weatherChart.data.labels   = slice.map(d => d.timestamp.split(' ')[1].slice(0,5));
-                weatherChart.data.datasets[0].data = slice.map(d => d.pres);
+                const sl = data.slice(-40);
+                weatherChart.data.labels           = sl.map(d=>d.timestamp.split(' ')[1].slice(0,5));
+                weatherChart.data.datasets[0].data = sl.map(d=>d.pres);
                 weatherChart.update();
 
-                // Last update
-                const ts = latest.timestamp.split(' ')[1].slice(0,5);
-                lastUpEl.textContent = `UPDATED ${ts} IST`;
+                lupEl.textContent = `UPDATED ${latest.timestamp.split(' ')[1].slice(0,5)} IST`;
+                firstLoad = false;
             })
-            .catch(() => {
-                spinner.classList.remove('active');
-                document.getElementById('last-update').textContent = 'FETCH ERROR';
+            .catch(()=>{
+                spin.classList.remove('active'); updateHealth();
+                document.getElementById('last-update').textContent = 'FETCH ERROR — RETRYING';
             });
     }
 
